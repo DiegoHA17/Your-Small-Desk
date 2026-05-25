@@ -23,9 +23,93 @@ function smtpPermiteDiagnostico(): bool
     return DEBUG_APP && in_array(APP_ENV, ['local', 'dev', 'development'], true);
 }
 
+function obtenerEstadoConfiguracionMailrelaySmtp(): array
+{
+    $configuracion = obtenerConfiguracionMailrelaySmtp();
+
+    return [
+        'origen' => 'base_datos',
+        'host_configurado' => $configuracion['mailrelay_smtp_host'] !== '',
+        'puerto_configurado' => $configuracion['mailrelay_smtp_port'] > 0
+            && $configuracion['mailrelay_smtp_port'] <= 65535,
+        'host' => $configuracion['mailrelay_smtp_host'],
+        'puerto' => $configuracion['mailrelay_smtp_port'],
+        'seguridad' => $configuracion['mailrelay_smtp_seguridad'],
+        'usuario_configurado' => $configuracion['mailrelay_smtp_usuario'] !== '',
+        'smtp_password_configurada' => $configuracion['mailrelay_smtp_password'] !== '',
+        'from_email_configurado' => filter_var($configuracion['mailrelay_from_email'], FILTER_VALIDATE_EMAIL) !== false,
+        'from_name_configurado' => $configuracion['mailrelay_from_name'] !== '',
+    ];
+}
+
 function errorMailrelaySmtp(string $mensaje, array $datos = []): array
 {
     return ['ok' => false, 'mensaje' => $mensaje, 'datos' => $datos];
+}
+
+function probarConexionSmtp(string $host, int $puerto, int $timeout = 5): array
+{
+    $host = trim($host);
+    if ($host === '' || $puerto <= 0 || $puerto > 65535) {
+        return errorMailrelaySmtp('Configura un host y puerto SMTP validos antes de probar la conectividad.', [
+            'reachable' => false,
+            'puerto' => $puerto,
+        ]);
+    }
+
+    $inicio = microtime(true);
+    $numeroError = 0;
+    $detalleError = '';
+    $conexion = @stream_socket_client(
+        'tcp://' . $host . ':' . $puerto,
+        $numeroError,
+        $detalleError,
+        $timeout,
+        STREAM_CLIENT_CONNECT
+    );
+    $tiempoMs = (int) round((microtime(true) - $inicio) * 1000);
+
+    if (is_resource($conexion)) {
+        fclose($conexion);
+        return [
+            'ok' => true,
+            'mensaje' => 'SMTP parece accesible desde este entorno. Si la prueba se ejecuta en Railway, puedes probar el envio SMTP con PHPMailer.',
+            'datos' => [
+                'reachable' => true,
+                'host' => $host,
+                'puerto' => $puerto,
+                'tiempo_ms' => $tiempoMs,
+            ],
+        ];
+    }
+
+    return errorMailrelaySmtp(
+        'SMTP no es accesible desde este servicio. En Railway Free, Trial y Hobby es normal porque SMTP saliente esta bloqueado.',
+        [
+            'reachable' => false,
+            'host' => $host,
+            'puerto' => $puerto,
+            'tiempo_ms' => $tiempoMs,
+            'error' => trim($detalleError) !== '' ? trim($detalleError) : 'No se pudo abrir la conexion TCP.',
+            'error_code' => $numeroError,
+        ]
+    );
+}
+
+function probarConectividadMailrelaySmtp(): array
+{
+    $configuracion = obtenerConfiguracionMailrelaySmtp();
+    $resultado = probarConexionSmtp(
+        $configuracion['mailrelay_smtp_host'],
+        $configuracion['mailrelay_smtp_port']
+    );
+    $resultado['datos'] = array_merge($resultado['datos'] ?? [], [
+        'seguridad' => $configuracion['mailrelay_smtp_seguridad'],
+        'usuario_configurado' => $configuracion['mailrelay_smtp_usuario'] !== '',
+        'smtp_password_configurada' => $configuracion['mailrelay_smtp_password'] !== '',
+    ]);
+
+    return $resultado;
 }
 
 function validarConfiguracionMailrelaySmtp(array $configuracion, string $destinatario, string $asunto, string $mensaje): ?array

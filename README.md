@@ -118,11 +118,11 @@ El adjunto se construye en `includes/mailrelay-api.php` con el formato oficial d
 
 ## Mailrelay SMTP para presupuestos adjuntos
 
-Para presupuestos con PDF, abre la pestana **SMTP presupuestos** en `JJH Space > Configuracion` y selecciona **SMTP Mailrelay (recomendado para adjuntos)**. Si la API devuelve un bloqueo de cuenta o rechaza adjuntos, SMTP evita depender de ese flujo API.
+En Railway, usa preferentemente **Mailrelay API por HTTPS**. Segun la documentacion oficial de Railway, SMTP saliente solo esta disponible en el plan Pro o superior; Free, Trial y Hobby deben utilizar servicios de correo mediante API HTTPS. Si usas Pro y necesitas SMTP, prueba la conectividad desde el diagnostico antes de seleccionarlo para los presupuestos.
 
 1. Introduce host, puerto, seguridad, usuario y password SMTP indicados en el panel de Mailrelay. Para la cuenta indicada como referencia: host `smtp1.s.ipzmarketing.com`, puerto `587` y seguridad `TLS`.
 2. Mantiene como remitente una cuenta del dominio autenticado, por ejemplo `info@podasytalasjjh.es` o `facturas@podasytalasjjh.es`.
-3. Deja activo el fallback si quieres probar la API y usar SMTP automaticamente tras un rechazo HTTP 422.
+3. No dependas del fallback SMTP en Railway Free, Trial o Hobby: el puerto estara bloqueado aunque la API funcione.
 4. Activa la copia oculta de respaldo si necesitas recibir cada presupuesto enviado; el cliente no ve ese destinatario.
 
 La password SMTP no se devuelve al navegador una vez guardada y se conserva al editar si el campo se deja vacio. Se almacena en la tabla `configuracion` para mantener operativo el panel actual.
@@ -130,10 +130,33 @@ La password SMTP no se devuelve al navegador una vez guardada y se conserva al e
 Secuencia de comprobacion recomendada:
 
 1. Probar envio simple por API y revisar el detalle devuelto si Mailrelay lo rechaza.
-2. Probar envio simple por SMTP desde la misma pestana.
-3. Solo si la API simple responde correctamente, probar TXT por API con variantes A, B y C.
-4. Enviar un presupuesto PDF usando SMTP.
-5. Repetir el envio con copia oculta activada.
+2. Abrir `diagnostico-mailrelay.php` y comprobar conectividad SMTP sin enviar correo.
+3. Probar envio simple por SMTP solo si el puerto conecta y el plan Railway lo permite.
+4. Solo si la API simple responde correctamente, probar TXT por API con variantes A, B y C.
+5. Enviar un presupuesto PDF por el metodo que haya respondido correctamente.
+6. Si usas SMTP Pro, repetir el envio con copia oculta activada.
+
+## Comprobar Mailrelay en Railway
+
+La pagina privada `diagnostico-mailrelay.php` esta disponible solo tras iniciar sesion. Lee la configuracion Mailrelay guardada en la tabla `configuracion`; no envia la API key ni la password SMTP al navegador.
+
+1. Guarda la URL API, API key, remitente y, si procede, datos SMTP en `Configuracion`.
+2. Abre `Diagnostico Mailrelay` desde el enlace de la pestana **API y pruebas**.
+3. Introduce un email propio de prueba y pulsa **Probar API HTTPS**. Esta accion envia un correo simple real mediante Mailrelay API.
+4. Pulsa **Comprobar puerto SMTP**. Esta prueba solo intenta abrir el host y puerto configurados, sin enviar correo ni usar la password.
+5. Si SMTP resulta accesible, puedes ejecutar **Probar envio SMTP** para confirmar autenticacion.
+
+Interpretacion:
+
+- API correcta y SMTP inaccesible: usa Mailrelay API. Es el resultado esperado en Railway Free, Trial o Hobby.
+- API responde que la cuenta esta en revision: Railway no esta bloqueando HTTPS; Mailrelay debe aprobar la cuenta.
+- API correcta y SMTP accesible: puedes utilizar ambos metodos; SMTP requiere Railway Pro o superior.
+- API rechazada por credenciales/configuracion: revisa la URL API, la clave guardada y el remitente autenticado.
+- SMTP con timeout o conexion rechazada: el plan Railway probablemente bloquea SMTP o Mailrelay no acepta la conexion desde ese servicio.
+
+Si el correo simple por API funciona pero Mailrelay rechaza el PDF adjunto, el diagnostico confirma un problema del payload/capacidad de adjuntos de Mailrelay, no de la red HTTPS de Railway. En Railway Free, Trial o Hobby no se puede sustituirlo por SMTP porque esa salida esta bloqueada; hay que resolver el adjunto API o desplegar en un plan con SMTP disponible.
+
+La respuesta cruda de Mailrelay se muestra solo en entorno `local` o `dev` con `DEBUG=true`. En produccion se conserva la respuesta JSON no sensible y el codigo HTTP, sin revelar secretos. Referencia oficial: [Railway Outbound Networking - Email delivery](https://docs.railway.com/networking/outbound-networking).
 
 ## PDF y WhatsApp
 
@@ -288,7 +311,7 @@ Documentacion oficial:
 2. Cambiar las credenciales iniciales.
 3. Verificar que `/storage/`, `/sql/`, `/includes/` y `/vendor/` devuelven acceso denegado.
 4. Crear un cliente y presupuesto de prueba y descargar su PDF.
-5. Probar SMTP con PDF adjunto y BCC real, si se usa.
+5. Probar Mailrelay API desde `diagnostico-mailrelay.php`; probar SMTP con PDF y BCC real solo si el servicio Railway esta en Pro o la conectividad SMTP se confirma.
 6. Confirmar que el volumen conserva PDFs tras un redespliegue.
 7. Revisar logs sin activar datos de diagnostico en las respuestas web.
 8. Confirmar que los logs no muestran `AH00534: More than one MPM loaded`.

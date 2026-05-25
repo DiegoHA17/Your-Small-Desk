@@ -210,9 +210,15 @@ require __DIR__ . '/includes/layout-header.php';
                 <div class="tab-pane fade" id="configApi" role="tabpanel" aria-labelledby="api-tab" tabindex="0">
                     <div class="settings-title">
                         <h2>Mailrelay API y diagnostico</h2>
-                        <p>La API se mantiene para pruebas. Los adjuntos de presupuesto se envian preferentemente por SMTP.</p>
+                        <p>En Railway, la API por HTTPS es el metodo recomendado porque funciona sin depender de puertos SMTP.</p>
                     </div>
                     <div class="row g-3 settings-fields">
+                        <div class="col-12">
+                            <div class="alert alert-info mb-0 small">
+                                En Railway Free, Trial y Hobby, el SMTP saliente esta bloqueado. Usa Mailrelay API por HTTPS o confirma conectividad desde el diagnostico si tu plan es Pro.
+                                <a class="alert-link ms-1" href="diagnostico-mailrelay.php">Abrir diagnostico Railway</a>
+                            </div>
+                        </div>
                         <div class="col-12">
                             <label class="form-label">URL API Mailrelay</label>
                             <input class="form-control" type="url" name="mailrelay_api_url" value="<?php echo htmlspecialchars($configuracion['mailrelay_api_url'] ?? MAILRELAY_API_URL_DEFAULT, ENT_QUOTES, 'UTF-8'); ?>" required>
@@ -252,16 +258,16 @@ require __DIR__ . '/includes/layout-header.php';
                 <div class="tab-pane fade" id="configSmtp" role="tabpanel" aria-labelledby="smtp-tab" tabindex="0">
                     <div class="settings-title">
                         <h2>Mailrelay SMTP para presupuestos adjuntos</h2>
-                        <p>Canal recomendado para enviar el PDF real de cada presupuesto al cliente.</p>
+                        <p>Usalo solo si el plan de Railway permite SMTP y la prueba de conectividad responde correctamente.</p>
                     </div>
                     <div class="row g-3 settings-fields">
                         <div class="col-lg-7">
                             <label class="form-label">Metodo de envio</label>
                             <select class="form-select" name="mailrelay_metodo_envio_facturas">
-                                <option value="smtp" <?php echo ($configuracion['mailrelay_metodo_envio_facturas'] ?? 'smtp') === 'smtp' ? 'selected' : ''; ?>>SMTP Mailrelay (recomendado para adjuntos)</option>
-                                <option value="api" <?php echo ($configuracion['mailrelay_metodo_envio_facturas'] ?? 'smtp') === 'api' ? 'selected' : ''; ?>>API Mailrelay</option>
+                                <option value="smtp" <?php echo ($configuracion['mailrelay_metodo_envio_facturas'] ?? 'smtp') === 'smtp' ? 'selected' : ''; ?>>SMTP Mailrelay (requiere conectividad SMTP)</option>
+                                <option value="api" <?php echo ($configuracion['mailrelay_metodo_envio_facturas'] ?? 'smtp') === 'api' ? 'selected' : ''; ?>>API Mailrelay (recomendado en Railway)</option>
                             </select>
-                            <div class="form-text">Para presupuestos con PDF adjunto y copia oculta real, se recomienda usar SMTP.</div>
+                            <div class="form-text">SMTP permite copia oculta real, pero Railway Free, Trial y Hobby lo bloquean. Prueba API y conectividad SMTP antes de seleccionar el metodo.</div>
                         </div>
                         <div class="col-lg-5 d-flex align-items-end pb-2">
                             <div class="form-check form-switch">

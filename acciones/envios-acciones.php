@@ -3,13 +3,31 @@ require_once __DIR__ . '/../includes/seguridad.php';
 require_once __DIR__ . '/../includes/mailrelay-api.php';
 require_once __DIR__ . '/../includes/mailrelay-smtp.php';
 exigirSesion();
+exigirMetodoPost();
 
 $accion = (string) ($_POST['accion'] ?? '');
-if (!in_array($accion, ['enviar_correo', 'probar_mailrelay_simple', 'probar_mailrelay_smtp_simple', 'probar_mailrelay_adjunto_txt', 'probar_adjunto_txt'], true)) {
+if (!in_array($accion, ['enviar_correo', 'probar_mailrelay_simple', 'probar_mailrelay_smtp_simple', 'probar_mailrelay_adjunto_txt', 'probar_adjunto_txt', 'estado_diagnostico_mailrelay', 'probar_conectividad_smtp'], true)) {
     responderJson(false, 'Accion no valida.');
 }
 
 validarCsrf();
+
+if ($accion === 'estado_diagnostico_mailrelay') {
+    $configuracion = obtenerConfiguracion();
+    $metodo = strtolower((string) ($configuracion['mailrelay_metodo_envio_facturas'] ?? 'smtp'));
+    responderJson(true, 'Configuracion de correo cargada correctamente.', [
+        'api' => obtenerEstadoConfiguracionMailrelay(),
+        'smtp' => obtenerEstadoConfiguracionMailrelaySmtp(),
+        'metodo_presupuestos' => in_array($metodo, ['api', 'smtp'], true) ? $metodo : 'smtp',
+        'entorno' => APP_ENV,
+        'debug_detallado' => mailrelayPermiteDiagnostico() || smtpPermiteDiagnostico(),
+    ]);
+}
+
+if ($accion === 'probar_conectividad_smtp') {
+    $resultado = probarConectividadMailrelaySmtp();
+    responderJson($resultado['ok'], $resultado['mensaje'], $resultado['datos'] ?? []);
+}
 
 $destinatario = limpiarCadena($_POST['destinatario'] ?? '');
 $asunto = limpiarCadena($_POST['asunto'] ?? '');

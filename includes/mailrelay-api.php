@@ -22,6 +22,24 @@ function mailrelayPermiteDiagnostico(): bool
     return DEBUG_APP && in_array(APP_ENV, ['local', 'dev', 'development'], true);
 }
 
+function obtenerEstadoConfiguracionMailrelay(): array
+{
+    $configuracion = obtenerConfiguracionMailrelay();
+    $apiUrl = $configuracion['mailrelay_api_url'];
+    $rutaApi = rtrim((string) parse_url($apiUrl, PHP_URL_PATH), '/');
+
+    return [
+        'origen' => 'base_datos',
+        'url_configurada' => $apiUrl !== '' && $apiUrl !== MAILRELAY_API_URL_DEFAULT,
+        'endpoint_valido' => str_ends_with($rutaApi, '/api/v1/send_emails'),
+        'endpoint_usado' => $apiUrl !== MAILRELAY_API_URL_DEFAULT ? $apiUrl : '',
+        'api_key_configurada' => $configuracion['mailrelay_api_key'] !== ''
+            && $configuracion['mailrelay_api_key'] !== MAILRELAY_API_KEY_DEFAULT,
+        'from_email_configurado' => filter_var($configuracion['mailrelay_from_email'], FILTER_VALIDATE_EMAIL) !== false,
+        'from_name_configurado' => $configuracion['mailrelay_from_name'] !== '',
+    ];
+}
+
 function errorMailrelay(string $mensaje, array $datos = []): array
 {
     return [
@@ -271,9 +289,17 @@ function ejecutarPeticionMailrelay(array $payload): array
     $errorCurl = str_replace($apiKey, '[oculto]', $errorCurl);
     $respuestaJson = json_decode($respuestaRaw, true);
     $ok = $errorCurl === '' && $httpCode >= 200 && $httpCode < 300;
+    $respuestaMinuscula = strtolower($respuestaRaw);
+    $cuentaEnRevision = str_contains($respuestaMinuscula, 'account is currently under review')
+        || str_contains($respuestaMinuscula, 'account under review');
 
     $datos = [
         'http_code' => $httpCode,
+        'curl_error' => $errorCurl,
+        'endpoint_usado' => $apiUrl,
+        'api_key_configurada' => $apiKey !== '' && $apiKey !== MAILRELAY_API_KEY_DEFAULT,
+        'respuesta_json' => is_array($respuestaJson) ? $respuestaJson : null,
+        'cuenta_en_revision' => $cuentaEnRevision,
         'respuesta_registro' => $respuestaRaw,
         'error_registro' => trim(
             ($httpCode > 0 ? 'HTTP ' . $httpCode : '')
@@ -308,6 +334,8 @@ function ejecutarPeticionMailrelay(array $payload): array
     $mensaje = 'Correo enviado correctamente.';
     if ($errorCurl !== '') {
         $mensaje = 'Error cURL al conectar con Mailrelay.';
+    } elseif ($cuentaEnRevision) {
+        $mensaje = 'La cuenta de Mailrelay esta en revision. Railway no es el problema. Mailrelay todavia no permite enviar.';
     } elseif (!$ok) {
         $mensaje = 'Mailrelay ha rechazado el envio.';
     }
