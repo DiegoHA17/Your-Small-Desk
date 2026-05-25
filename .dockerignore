@@ -1,0 +1,10 @@
+.git
+.env
+.env.*
+vendor/
+node_modules/
+storage/**/*.pdf
+storage/**/sess_*
+storage/**/tmp/*
+storage/**/*.log
+*.zip

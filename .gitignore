@@ -1,0 +1,7 @@
+.env
+.env.*
+/vendor/
+/storage/**/*.pdf
+/storage/**/sess_*
+/storage/**/tmp/*
+/storage/**/*.log
