@@ -23,6 +23,7 @@ No usa frameworks PHP, frontend SPA, multiusuario, pagos, IA ni integraciones fi
 ```ini
 extension=curl
 extension=gd
+extension=mbstring
 ```
 
 4. Instala dependencias:
@@ -32,7 +33,7 @@ cd C:\xampp\htdocs\jjh-space
 composer install
 ```
 
-5. Importa `sql/jjh_space.sql` en phpMyAdmin para una instalacion nueva.
+5. Crea una base `jjh_space`, seleccionala e importa `sql/jjh_space.sql` en phpMyAdmin para una instalacion nueva. El archivo crea las tablas en la base seleccionada y no fuerza el nombre de base, para que pueda importarse tambien en Railway.
 
 Para una instalacion existente que ya tenga presupuestos guardados internamente como facturas, ejecuta una sola vez `sql/actualizacion_mailrelay_api.sql`.
 
@@ -49,7 +50,7 @@ DB_PASS=
 DB_CHARSET=utf8mb4
 ```
 
-En produccion define estos valores en Railway; no guardes credenciales en archivos PHP.
+En produccion define estos valores en Railway; no guardes credenciales en archivos PHP ni en Git.
 
 ## Usuario inicial
 
@@ -190,7 +191,7 @@ DB_PASS=
 DB_CHARSET=utf8mb4
 ```
 
-Las variables necesarias para el runtime son `APP_*`, `DEBUG`, `SESSION_*` y `DB_*`. Los datos de Mailrelay se rellenan en `Configuracion`; la aplicacion usa los valores persistidos en la base de datos.
+Las variables necesarias para el runtime son `APP_*`, `DEBUG`, `SESSION_*` y `DB_*`. Los datos de Mailrelay se rellenan en `Configuracion`; por compatibilidad con la aplicacion actual, se usan los valores persistidos en la base de datos y no variables `MAILRELAY_*`.
 
 Riesgo conocido: la API key y la password SMTP quedan protegidas por el control de acceso a la base de datos, pero no cifradas a nivel de columna. Cifrarlas requeriria gestionar una clave maestra externa y migrar los valores existentes; no se ha introducido ese cambio para no romper la configuracion ya guardada.
 
@@ -200,15 +201,51 @@ El proyecto incluye `Dockerfile`; Railway utiliza un `Dockerfile` situado en la 
 
 1. Sube `jjh-space` a un repositorio privado y crea un servicio Railway desde el repositorio.
 2. Si es un subdirectorio del repositorio, configura el directorio raiz del servicio como `jjh-space`.
-3. Añade un servicio MySQL en Railway e importa `sql/jjh_space.sql`.
-4. Configura en el servicio web `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER` y `DB_PASS` con los valores del servicio MySQL.
-5. Configura `APP_ENV=production`, `DEBUG=false`, `SESSION_SECURE=true`, `APP_URL` y las variables `DB_*`.
+3. Añade un servicio MySQL en Railway.
+4. En el servicio web, crea referencias a las variables del servicio MySQL; no copies la URL publica como conexion de la app:
+
+```dotenv
+APP_ENV=production
+APP_URL=https://TU-APP.up.railway.app
+DEBUG=false
+SESSION_SECURE=true
+SESSION_IDLE_TIMEOUT=1800
+DB_HOST=${{MySQL.MYSQLHOST}}
+DB_PORT=${{MySQL.MYSQLPORT}}
+DB_NAME=${{MySQL.MYSQLDATABASE}}
+DB_USER=${{MySQL.MYSQLUSER}}
+DB_PASS=${{MySQL.MYSQLPASSWORD}}
+DB_CHARSET=utf8mb4
+```
+
+Si el servicio de base de datos no se llama `MySQL`, usa `Add Reference` en Railway para generar las referencias con el nombre real.
+
+5. Para una instalacion nueva, importa `sql/jjh_space.sql` en la base `railway`. Para subir tus datos locales existentes, exporta e importa un volcado como se explica debajo.
 6. Expone el puerto `80` del contenedor Apache.
 7. Adjunta un volumen al servicio web montado en `/var/www/html/storage` para conservar PDFs entre despliegues.
 8. Tras desplegar, cambia inmediatamente el correo y la contraseña iniciales.
 9. Entra en `Configuracion` y guarda la API/SMTP de Mailrelay y el BCC si procede.
 
-El contenedor instala `mysqli`, `curl`, `gd`, `mbstring` y `zip`, ejecuta Composer sin dependencias de desarrollo y, al arrancar, crea `storage` con permisos de escritura incluso cuando el volumen ya esta montado.
+El contenedor desactiva `mpm_event` y `mpm_worker`, activa exclusivamente `mpm_prefork` para PHP Apache, instala `mysqli`, `curl`, `gd`, `mbstring`, `exif` y `zip`, ejecuta Composer sin dependencias de desarrollo y crea `storage` con permisos de escritura incluso cuando el volumen ya esta montado.
+
+### Importar SQL o datos locales en Railway desde PowerShell
+
+`MYSQL_PUBLIC_URL` se usa solo desde tu equipo para importar. La aplicacion desplegada debe conectarse mediante las variables internas `DB_*` anteriores.
+
+Para instalar tablas vacias, copia el host y puerto publicos del servicio MySQL con la traduccion automatica del navegador desactivada y ejecuta:
+
+```powershell
+Get-Content "C:\Users\DIEGO\Desktop\JJH\jjh-space\sql\jjh_space.sql" | & "C:\xampp\mysql\bin\mysql.exe" --host=HOST_PUBLICO --port=PUERTO_PUBLICO --user=root --password railway
+```
+
+Para trasladar los clientes, presupuestos y configuracion Mailrelay que ya tengas en XAMPP:
+
+```powershell
+& "C:\xampp\mysql\bin\mysqldump.exe" --host=localhost --port=3306 --user=root --default-character-set=utf8mb4 jjh_space > "C:\Users\DIEGO\Desktop\JJH\jjh_space_backup.sql"
+Get-Content "C:\Users\DIEGO\Desktop\JJH\jjh_space_backup.sql" | & "C:\xampp\mysql\bin\mysql.exe" --host=HOST_PUBLICO --port=PUERTO_PUBLICO --user=root --password railway
+```
+
+El cliente pide la contraseña en el prompt: no la escribas en el comando ni la subas a Git. El volcado contiene configuracion sensible de Mailrelay si ya la guardaste en la app; mantenlo fuera del repositorio y eliminalo cuando no lo necesites.
 
 Documentacion oficial:
 
@@ -226,3 +263,4 @@ Documentacion oficial:
 5. Probar SMTP con PDF adjunto y BCC real, si se usa.
 6. Confirmar que el volumen conserva PDFs tras un redespliegue.
 7. Revisar logs sin activar datos de diagnostico en las respuestas web.
+8. Confirmar que los logs no muestran `AH00534: More than one MPM loaded`.

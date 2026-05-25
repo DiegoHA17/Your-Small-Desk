@@ -3,8 +3,11 @@
 .env.*
 vendor/
 node_modules/
+storage/*.pdf
 storage/**/*.pdf
 storage/**/sess_*
 storage/**/tmp/*
 storage/**/*.log
 *.zip
+.DS_Store
+Thumbs.db

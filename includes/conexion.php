@@ -17,7 +17,7 @@ function valorBooleanoEntorno(string $nombre, bool $porDefecto): bool
     return $normalizado ?? $porDefecto;
 }
 
-define('APP_ENV', strtolower(valorEntorno('APP_ENV', 'production')));
+define('APP_ENV', strtolower(valorEntorno('APP_ENV', 'local')));
 define('APP_URL', rtrim(valorEntorno('APP_URL', ''), '/'));
 define('DEBUG_APP', valorBooleanoEntorno('DEBUG', APP_ENV !== 'production'));
 
@@ -26,13 +26,18 @@ function esProduccion(): bool
     return APP_ENV === 'production';
 }
 
+function esDebug(): bool
+{
+    return DEBUG_APP && !esProduccion();
+}
+
 function registrarError(Throwable|string $error): void
 {
     $mensaje = $error instanceof Throwable ? $error->getMessage() : $error;
     error_log('[JJH Space] ' . $mensaje);
 }
 
-ini_set('display_errors', DEBUG_APP && !esProduccion() ? '1' : '0');
+ini_set('display_errors', esDebug() ? '1' : '0');
 ini_set('log_errors', '1');
 
 define('DB_HOST', valorEntorno('DB_HOST', 'localhost'));

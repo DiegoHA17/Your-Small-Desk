@@ -1,7 +1,10 @@
 .env
 .env.*
 /vendor/
+/storage/*.pdf
 /storage/**/*.pdf
 /storage/**/sess_*
 /storage/**/tmp/*
 /storage/**/*.log
+.DS_Store
+Thumbs.db

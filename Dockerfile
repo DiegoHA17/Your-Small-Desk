@@ -9,11 +9,17 @@ RUN apt-get update \
         libjpeg62-turbo-dev \
         libonig-dev \
         libpng-dev \
+        libwebp-dev \
         libzip-dev \
+        git \
         unzip \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j"$(nproc)" mysqli curl gd mbstring zip \
-    && a2enmod headers rewrite \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
+    && docker-php-ext-install -j"$(nproc)" mysqli curl gd mbstring exif zip \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN a2dismod mpm_event mpm_worker || true
+
+RUN a2enmod mpm_prefork headers rewrite \
     && sed -ri 's/AllowOverride None/AllowOverride All/g' /etc/apache2/apache2.conf \
     && printf '%s\n' \
         '<Directory "/var/www/html/storage">' \
@@ -35,8 +41,7 @@ RUN apt-get update \
         '    Require all denied' \
         '</Directory>' \
         > /etc/apache2/conf-available/jjh-interno.conf \
-    && a2enconf jjh-interno \
-    && rm -rf /var/lib/apt/lists/*
+    && a2enconf jjh-interno
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
@@ -46,9 +51,9 @@ RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoload
 
 COPY . .
 
-RUN mkdir -p storage/facturas/tmp storage/presupuestos storage/tmp \
+RUN mkdir -p storage/facturas storage/presupuestos storage/tmp storage/logs \
     && chown -R www-data:www-data storage \
-    && chmod -R u+rwX,g+rwX storage \
+    && chmod -R 775 storage \
     && chmod +x deploy/docker-entrypoint-jjh.sh
 
 EXPOSE 80

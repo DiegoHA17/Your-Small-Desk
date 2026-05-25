@@ -127,7 +127,7 @@ function generarPdfFactura(int $idFactura): array
         throw new RuntimeException('No se pudo preparar el almacenamiento de facturas.');
     }
 
-    $tmp = $directorio . DIRECTORY_SEPARATOR . 'tmp';
+    $tmp = __DIR__ . '/../storage/tmp';
     if (!is_dir($tmp) && !mkdir($tmp, 0775, true) && !is_dir($tmp)) {
         throw new RuntimeException('No se pudo crear el directorio temporal de mPDF.');
     }

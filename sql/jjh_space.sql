@@ -1,8 +1,6 @@
-CREATE DATABASE IF NOT EXISTS jjh_space
-  CHARACTER SET utf8mb4
-  COLLATE utf8mb4_unicode_ci;
-
-USE jjh_space;
+-- Importa este archivo sobre la base seleccionada.
+-- Local: crea/selecciona jjh_space antes de importar.
+-- Railway: selecciona la base railway; no se fuerza un nombre distinto aqui.
 
 DROP TABLE IF EXISTS envios;
 DROP TABLE IF EXISTS factura_lineas;
