@@ -19,7 +19,8 @@ RUN apt-get update \
 
 RUN a2dismod mpm_event mpm_worker || true
 
-RUN a2enmod mpm_prefork headers rewrite \
+RUN rm -f /etc/apache2/mods-enabled/mpm_*.load /etc/apache2/mods-enabled/mpm_*.conf \
+    && a2enmod mpm_prefork headers rewrite \
     && sed -ri 's/AllowOverride None/AllowOverride All/g' /etc/apache2/apache2.conf \
     && printf '%s\n' \
         '<Directory "/var/www/html/storage">' \
@@ -41,7 +42,10 @@ RUN a2enmod mpm_prefork headers rewrite \
         '    Require all denied' \
         '</Directory>' \
         > /etc/apache2/conf-available/jjh-interno.conf \
-    && a2enconf jjh-interno
+    && a2enconf jjh-interno \
+    && test "$(find /etc/apache2/mods-enabled -maxdepth 1 -name 'mpm_*.load' | wc -l)" -eq 1 \
+    && apache2ctl -M 2>&1 | grep -q 'mpm_prefork_module' \
+    && apache2ctl configtest
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
