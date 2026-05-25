@@ -12,7 +12,7 @@ $fechaEmision = !empty($facturaPdf['fecha_emision']) ? date('d/m/Y', strtotime($
 <!doctype html>
 <html lang="es">
 <head>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
     <style>
         body { margin: 0; font-family: DejaVu Sans, sans-serif; color: #1F2933; font-size: 10.5px; background: #ffffff; }
         .page { padding: 10mm; background: #ffffff; }

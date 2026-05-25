@@ -153,6 +153,7 @@ function crearMailerMailrelaySmtp(array $configuracion, string $destinatario, st
 {
     $mail = new \PHPMailer\PHPMailer\PHPMailer(true);
     $mail->CharSet = 'UTF-8';
+    $mail->Encoding = 'base64';
     $mail->isSMTP();
     $mail->Host = $configuracion['mailrelay_smtp_host'];
     $mail->SMTPAuth = true;

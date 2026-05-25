@@ -2,6 +2,8 @@
 -- Local: crea/selecciona jjh_space antes de importar.
 -- Railway: selecciona la base railway; no se fuerza un nombre distinto aqui.
 
+SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci;
+
 DROP TABLE IF EXISTS envios;
 DROP TABLE IF EXISTS factura_lineas;
 DROP TABLE IF EXISTS facturas;

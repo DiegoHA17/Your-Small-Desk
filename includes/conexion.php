@@ -45,7 +45,7 @@ define('DB_PORT', (int) valorEntorno('DB_PORT', '3306'));
 define('DB_USER', valorEntorno('DB_USER', 'root'));
 define('DB_PASS', valorEntorno('DB_PASS', ''));
 define('DB_NAME', valorEntorno('DB_NAME', 'jjh_space'));
-define('DB_CHARSET', valorEntorno('DB_CHARSET', 'utf8mb4'));
+define('DB_CHARSET', strtolower(trim(valorEntorno('DB_CHARSET', 'utf8mb4'))));
 
 define('SMTP_HOST_DEFAULT', 'smtp.mailrelay.com');
 define('SMTP_PORT_DEFAULT', 587);
@@ -67,9 +67,14 @@ function obtenerConexion(): mysqli
         return $conexion;
     }
 
+    if (DB_CHARSET !== 'utf8mb4') {
+        throw new RuntimeException('DB_CHARSET debe configurarse como utf8mb4.');
+    }
+
     mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
     $conexion = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_PORT);
     $conexion->set_charset(DB_CHARSET);
+    $conexion->query('SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci');
 
     return $conexion;
 }

@@ -52,6 +52,33 @@ DB_CHARSET=utf8mb4
 
 En produccion define estos valores en Railway; no guardes credenciales en archivos PHP ni en Git.
 
+## Codificacion UTF-8 y tildes
+
+JJH Space utiliza `utf8mb4` en la conexion MySQL, HTML, JSON, PDF y correo. En Railway define obligatoriamente:
+
+```dotenv
+DB_CHARSET=utf8mb4
+```
+
+No uses `latin1` ni `utf8`. La aplicacion rechazara una configuracion `DB_CHARSET` distinta de `utf8mb4` para evitar guardar nuevos textos corruptos.
+
+Para una base ya creada, selecciona la base correspondiente y ejecuta `sql/actualizacion_utf8mb4.sql`. Este script convierte la base y sus tablas a `utf8mb4_unicode_ci`; no puede recuperar automaticamente textos que ya esten guardados con caracteres rotos como `JosÃ©`.
+
+Para exportar desde MySQL/MariaDB local conservando tildes:
+
+```powershell
+& "C:\xampp\mysql\bin\mysqldump.exe" --default-character-set=utf8mb4 --host=localhost --port=3306 --user=root jjh_space > "C:\Users\DIEGO\Downloads\jjh_space_utf8mb4.sql"
+```
+
+Para importar en Railway usa un cliente MySQL 8 compatible con `caching_sha2_password`, no el cliente MariaDB incluido en XAMPP:
+
+```powershell
+mysqlsh --sql --host=HOST_PUBLICO --port=PUERTO_PUBLICO --user=root --password --database=railway --file="C:\Users\DIEGO\Downloads\jjh_space_utf8mb4.sql"
+mysqlsh --sql --host=HOST_PUBLICO --port=PUERTO_PUBLICO --user=root --password --database=railway --file="C:\Users\DIEGO\Desktop\JJH\jjh-space\sql\actualizacion_utf8mb4.sql"
+```
+
+No uses `utf8_encode()` ni `utf8_decode()` como parche: la solucion es mantener UTF-8 de extremo a extremo.
+
 ## Usuario inicial
 
 - Email: `admin@jjhspace.local`
@@ -232,17 +259,18 @@ El contenedor desactiva `mpm_event` y `mpm_worker`, activa exclusivamente `mpm_p
 
 `MYSQL_PUBLIC_URL` se usa solo desde tu equipo para importar. La aplicacion desplegada debe conectarse mediante las variables internas `DB_*` anteriores.
 
-Para instalar tablas vacias, copia el host y puerto publicos del servicio MySQL con la traduccion automatica del navegador desactivada y ejecuta:
+Para instalar tablas vacias, copia el host y puerto publicos del servicio MySQL con la traduccion automatica del navegador desactivada y usa MySQL Shell:
 
 ```powershell
-Get-Content "C:\Users\DIEGO\Desktop\JJH\jjh-space\sql\jjh_space.sql" | & "C:\xampp\mysql\bin\mysql.exe" --host=HOST_PUBLICO --port=PUERTO_PUBLICO --user=root --password railway
+mysqlsh --sql --host=HOST_PUBLICO --port=PUERTO_PUBLICO --user=root --password --database=railway --file="C:\Users\DIEGO\Desktop\JJH\jjh-space\sql\jjh_space.sql"
 ```
 
 Para trasladar los clientes, presupuestos y configuracion Mailrelay que ya tengas en XAMPP:
 
 ```powershell
 & "C:\xampp\mysql\bin\mysqldump.exe" --host=localhost --port=3306 --user=root --default-character-set=utf8mb4 jjh_space > "C:\Users\DIEGO\Desktop\JJH\jjh_space_backup.sql"
-Get-Content "C:\Users\DIEGO\Desktop\JJH\jjh_space_backup.sql" | & "C:\xampp\mysql\bin\mysql.exe" --host=HOST_PUBLICO --port=PUERTO_PUBLICO --user=root --password railway
+mysqlsh --sql --host=HOST_PUBLICO --port=PUERTO_PUBLICO --user=root --password --database=railway --file="C:\Users\DIEGO\Desktop\JJH\jjh_space_backup.sql"
+mysqlsh --sql --host=HOST_PUBLICO --port=PUERTO_PUBLICO --user=root --password --database=railway --file="C:\Users\DIEGO\Desktop\JJH\jjh-space\sql\actualizacion_utf8mb4.sql"
 ```
 
 El cliente pide la contraseña en el prompt: no la escribas en el comando ni la subas a Git. El volcado contiene configuracion sensible de Mailrelay si ya la guardaste en la app; mantenlo fuera del repositorio y eliminalo cuando no lo necesites.

@@ -1,6 +1,8 @@
 -- Ejecuta esta migracion sobre la base seleccionada.
 -- Local: selecciona jjh_space. Railway: selecciona railway.
 
+SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci;
+
 ALTER TABLE configuracion
   ADD COLUMN IF NOT EXISTS mailrelay_api_url VARCHAR(255) NULL AFTER nif_cif_empresa,
   ADD COLUMN IF NOT EXISTS mailrelay_api_key VARCHAR(255) NULL AFTER mailrelay_api_url,

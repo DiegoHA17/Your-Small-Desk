@@ -6,19 +6,19 @@ $imagenSocial = $appUrlPublica !== '' ? $appUrlPublica . '/assets/img/og-image.p
 <!doctype html>
 <html lang="es">
 <head>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?php echo htmlspecialchars($tituloPagina, ENT_QUOTES, 'UTF-8'); ?> | JJH Space</title>
     <meta name="theme-color" content="#174D2A">
     <meta name="application-name" content="JJH Space">
     <meta name="apple-mobile-web-app-title" content="JJH Space">
     <meta property="og:title" content="JJH Space">
-    <meta property="og:description" content="Gestion de presupuestos de Podas y Talas JJH">
+    <meta property="og:description" content="Gestión de presupuestos de Podas y Talas JJH">
     <meta property="og:type" content="website">
     <meta property="og:image" content="<?php echo htmlspecialchars($imagenSocial, ENT_QUOTES, 'UTF-8'); ?>">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="JJH Space">
-    <meta name="twitter:description" content="Gestion de presupuestos de Podas y Talas JJH">
+    <meta name="twitter:description" content="Gestión de presupuestos de Podas y Talas JJH">
     <meta name="twitter:image" content="<?php echo htmlspecialchars($imagenSocial, ENT_QUOTES, 'UTF-8'); ?>">
     <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="assets/img/favicon-16x16.png">

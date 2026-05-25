@@ -255,7 +255,7 @@ function ejecutarPeticionMailrelay(array $payload): array
         CURLOPT_CUSTOMREQUEST => 'POST',
         CURLOPT_HTTPHEADER => [
             'X-AUTH-TOKEN: ' . $apiKey,
-            'content-type: application/json',
+            'Content-Type: application/json; charset=UTF-8',
             'Accept: application/json',
         ],
         CURLOPT_POSTFIELDS => $jsonPayload,

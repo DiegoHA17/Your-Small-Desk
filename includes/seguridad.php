@@ -31,6 +31,7 @@ function iniciarSesionSegura(): void
     ]);
     session_start();
 
+    header('Content-Type: text/html; charset=UTF-8');
     header('X-Frame-Options: SAMEORIGIN');
     header('X-Content-Type-Options: nosniff');
     header('Referrer-Policy: strict-origin-when-cross-origin');
@@ -83,7 +84,7 @@ function limpiarCadena(?string $valor): string
 
 function responderJson(bool $ok, string $mensaje, array $datos = []): void
 {
-    header('Content-Type: application/json; charset=utf-8');
+    header('Content-Type: application/json; charset=UTF-8');
     header('Cache-Control: no-store');
     echo json_encode([
         'ok' => $ok,
