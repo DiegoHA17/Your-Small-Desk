@@ -2,6 +2,8 @@
 /node_modules/
 /desktop/node_modules/
 /desktop/dist/
+/desktop/php/*
+!/desktop/php/README-PHP-PORTABLE.txt
 /data/*.sqlite
 /data/*.sqlite-journal
 /data/*.db

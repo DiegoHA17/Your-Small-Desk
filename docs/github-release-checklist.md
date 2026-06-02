@@ -7,6 +7,12 @@
 - Confirmar que no hay claves ni datos reales en el repo.
 - Confirmar que `.gitignore` excluye SQLite, PDFs, logs, logos reales, `.env`, `desktop/dist/` y `.exe`.
 - Confirmar que el icono `desktop/resources/icon.ico` es propio o tiene permiso de uso.
+- Colocar PHP portable completo en `desktop/php/`.
+- Confirmar que existe `desktop/php/php.exe`.
+- Confirmar que existe `desktop/php/php.ini`.
+- Confirmar que existe `desktop/php/ext/`.
+- Activar en `php.ini` las extensiones `pdo_sqlite`, `sqlite3`, `mbstring`, `curl`, `fileinfo`, `gd` y `zip`.
+- Ejecutar `desktop/php/php.exe -m` y comprobar que aparecen `pdo_sqlite`, `sqlite3`, `fileinfo` y `mbstring`.
 
 ## Compilar instalador
 
@@ -51,6 +57,7 @@ git push origin v0.1.0
 ## No subir al repositorio
 
 - `desktop/dist/`
+- binarios de `desktop/php/`
 - instaladores `.exe`
 - `data/*.sqlite`
 - PDFs generados

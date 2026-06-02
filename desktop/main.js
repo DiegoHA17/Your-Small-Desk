@@ -9,6 +9,7 @@ const HOST = '127.0.0.1';
 const PORT_MIN = 8765;
 const PORT_MAX = 8775;
 const APP_NAME = 'Your Small Desk';
+const REQUIRED_PHP_EXTENSIONS = ['pdo_sqlite', 'sqlite3', 'fileinfo', 'mbstring'];
 
 let phpProcess = null;
 let mainWindow = null;
@@ -32,7 +33,17 @@ function getPortablePhpPath() {
 
 function candidatePhpPaths() {
   const candidates = [];
+  const devPortable = path.join(__dirname, 'php', 'php.exe');
+  const packagedPortable = path.join(process.resourcesPath || '', 'php', 'php.exe');
   const portable = getPortablePhpPath();
+
+  if (fs.existsSync(devPortable)) {
+    candidates.push(devPortable);
+  }
+
+  if (app.isPackaged && fs.existsSync(packagedPortable)) {
+    candidates.push(packagedPortable);
+  }
 
   if (fs.existsSync(portable)) {
     candidates.push(portable);
@@ -44,6 +55,39 @@ function candidatePhpPaths() {
 
   candidates.push('php');
   return [...new Set(candidates)];
+}
+
+function runPhpCommand(phpPath, args) {
+  return new Promise((resolve) => {
+    let stdout = '';
+    let stderr = '';
+    const child = spawn(phpPath, args, {
+      windowsHide: true,
+      stdio: ['ignore', 'pipe', 'pipe']
+    });
+
+    child.stdout.on('data', (data) => {
+      stdout += String(data);
+    });
+
+    child.stderr.on('data', (data) => {
+      stderr += String(data);
+    });
+
+    child.once('error', (error) => resolve({
+      ok: false,
+      stdout,
+      stderr,
+      error
+    }));
+
+    child.once('exit', (code) => resolve({
+      ok: code === 0,
+      stdout,
+      stderr,
+      error: null
+    }));
+  });
 }
 
 function canRunPhp(phpPath) {
@@ -66,6 +110,21 @@ async function findPhp() {
   }
 
   return null;
+}
+
+async function findMissingPhpExtensions(phpPath) {
+  const result = await runPhpCommand(phpPath, ['-m']);
+
+  if (!result.ok) {
+    return REQUIRED_PHP_EXTENSIONS;
+  }
+
+  const loaded = result.stdout
+    .split(/\r?\n/)
+    .map((line) => line.trim().toLowerCase())
+    .filter(Boolean);
+
+  return REQUIRED_PHP_EXTENSIONS.filter((extension) => !loaded.includes(extension));
 }
 
 function isPortFree(port) {
@@ -241,7 +300,17 @@ async function boot() {
   if (!phpPath) {
     dialog.showErrorBox(
       'No se encontro PHP',
-      'No se encontro PHP. Anade PHP portable en desktop/php/php.exe o instala PHP y anadelo al PATH.'
+      'No se encontro PHP. Anade PHP portable en desktop/php/php.exe antes de compilar o instala PHP y anadelo al PATH.'
+    );
+    app.quit();
+    return;
+  }
+
+  const missingExtensions = await findMissingPhpExtensions(phpPath);
+  if (missingExtensions.length > 0) {
+    dialog.showErrorBox(
+      'PHP incompleto',
+      `PHP se encontro, pero faltan extensiones necesarias: ${missingExtensions.join(', ')}. Revisa desktop/php/php.ini.`
     );
     app.quit();
     return;

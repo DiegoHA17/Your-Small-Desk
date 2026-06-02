@@ -41,7 +41,28 @@ Para que el usuario final no dependa del PATH, coloca una distribucion portable 
 desktop/php/php.exe
 ```
 
-El archivo `desktop/php/README-PHP-PORTABLE.txt` documenta esta ubicacion.
+La carpeta `desktop/php/` debe contener la distribucion completa, no solo `php.exe`:
+
+```text
+desktop/php/php.exe
+desktop/php/php.ini
+desktop/php/ext/
+desktop/php/*.dll
+```
+
+Activa en `php.ini`:
+
+```text
+extension=pdo_sqlite
+extension=sqlite3
+extension=mbstring
+extension=curl
+extension=fileinfo
+extension=gd
+extension=zip
+```
+
+El archivo `desktop/php/README-PHP-PORTABLE.txt` documenta la preparacion completa.
 
 ## Base de datos SQLite
 
@@ -138,6 +159,8 @@ La configuracion deja preparado:
 - Instalador NSIS.
 - Version portable.
 
+El build copia `desktop/php/` dentro de `resources/php/`. Si compilas sin PHP portable, el `.exe` arrancara pero mostrara que no encontro PHP.
+
 ## Icono
 
 Si existe `desktop/resources/icon.ico`, Electron lo usara como icono de ventana e instalador.
@@ -162,7 +185,8 @@ Enlaces externos como WhatsApp, B2Brouter o Mailrelay se abren en el navegador p
 
 ## Limitaciones actuales
 
-- Necesita PHP con la extension `pdo_sqlite`.
+- Necesita PHP portable incluido o PHP disponible en el PATH.
+- Necesita las extensiones `pdo_sqlite`, `sqlite3`, `fileinfo` y `mbstring`.
 - En desarrollo los PDFs siguen en `storage/`; al empaquetar conviene revisar una ruta de storage escribible si se instala en una carpeta protegida.
 - No sincroniza datos entre ordenadores.
 - No sustituye despliegues web avanzados si decides mantenerlos.
@@ -170,4 +194,4 @@ Enlaces externos como WhatsApp, B2Brouter o Mailrelay se abren en el navegador p
 ## Futuro recomendado
 
 - Copias de seguridad automaticas.
-- Instalador con PHP portable incluido.
+- Automatizar la descarga/verificacion de PHP portable antes del build.

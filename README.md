@@ -159,6 +159,23 @@ La app creara la base indicada por `SQLITE_PATH`. Si no defines esa variable, el
 
 ## Compilar instalador
 
+Antes de compilar, coloca PHP portable completo dentro de:
+
+```text
+desktop/php/
+```
+
+La carpeta debe contener:
+
+```text
+desktop/php/php.exe
+desktop/php/php.ini
+desktop/php/ext/
+desktop/php/*.dll
+```
+
+Activa en `php.ini` las extensiones `pdo_sqlite`, `sqlite3`, `mbstring`, `curl`, `fileinfo`, `gd` y `zip`. La app comprueba al arrancar las extensiones criticas `pdo_sqlite`, `sqlite3`, `fileinfo` y `mbstring`.
+
 ```powershell
 cd desktop
 npm install
@@ -170,6 +187,8 @@ Los instaladores se generan en:
 ```text
 desktop/dist/
 ```
+
+Si el instalador muestra "No se encontro PHP", recompila despues de colocar PHP portable completo en `desktop/php/`.
 
 Los `.exe` generados deben publicarse en GitHub Releases, no dentro del repositorio.
 

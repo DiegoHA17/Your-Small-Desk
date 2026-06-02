@@ -24,8 +24,7 @@
       "main.js",
       "preload.js",
       "package.json",
-      "resources/**/*",
-      "php/**/*"
+      "resources/**/*"
     ],
     "extraResources": [
       {
