@@ -13,6 +13,7 @@
 - Confirmar que existe `desktop/php/ext/`.
 - Activar en `php.ini` las extensiones `pdo_sqlite`, `sqlite3`, `mbstring`, `curl`, `fileinfo`, `gd` y `zip`.
 - Ejecutar `desktop/php/php.exe -m` y comprobar que aparecen `pdo_sqlite`, `sqlite3`, `fileinfo` y `mbstring`.
+- Confirmar que `desktop/php/license.txt` existe para conservar la licencia de PHP portable.
 
 ## Compilar instalador
 
@@ -31,6 +32,13 @@ desktop/dist/
 ```
 
 El instalador debe llamarse con el nombre Your Small Desk.
+
+Comprobar que el build incluye PHP portable:
+
+```powershell
+Test-Path .\dist\win-unpacked\resources\php\php.exe
+Test-Path .\dist\win-unpacked\resources\php\license.txt
+```
 
 ## Subir codigo
 

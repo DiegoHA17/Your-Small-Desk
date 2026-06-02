@@ -11,21 +11,23 @@
   </a>
 </p>
 
-Your Small Desk es una aplicación local de escritorio para crear presupuestos, gestionar clientes, generar PDFs y controlar estados de cobro, pensada para autónomos, pequeños negocios y microempresas.
+Your Small Desk es una aplicacion local de escritorio para crear presupuestos, gestionar clientes, generar PDFs y controlar estados de cobro, pensada para autonomos, pequenos negocios y microempresas.
 
-La versión de escritorio usa PHP, SQLite y Electron. No necesita servidor externo para trabajar en local.
+La version de escritorio usa PHP, SQLite y Electron. No necesita servidor externo para trabajar en local.
 
 Your Small Desk · Desarrollado por Diego Herrera Ayuso
 
-## Qué es Your Small Desk
+El instalador de Windows puede incluir PHP portable para funcionar sin instalar PHP manualmente. PHP se redistribuye bajo PHP License 3.01 y conserva su aviso de licencia dentro del paquete.
 
-Una herramienta sencilla para trabajar desde un ordenador Windows con presupuestos, clientes, PDFs, estados y resúmenes trimestrales sin depender de una plataforma externa.
+## Que es Your Small Desk
+
+Una herramienta sencilla para trabajar desde un ordenador Windows con presupuestos, clientes, PDFs, estados y resumenes trimestrales sin depender de una plataforma externa.
 
 ## Descargar
 
-Descarga la última versión instalable desde la sección Releases de GitHub:
+Descarga la ultima version instalable desde la seccion Releases de GitHub:
 
-[Descargar última versión](https://github.com/DiegoHA17/Your-Small-Desk/releases/latest)
+[Descargar ultima version](https://github.com/DiegoHA17/Your-Small-Desk/releases/latest)
 
 ## Caracteristicas
 
@@ -229,6 +231,8 @@ Esta licencia no sustituye asesoramiento legal profesional. Si necesitas un uso 
 ## Licencias de terceros
 
 Consulta [docs/third-party-licenses.md](docs/third-party-licenses.md).
+
+Si descargas el instalador de Windows, puede incluir PHP portable. Su licencia y atribucion se conservan dentro del paquete, normalmente en `resources/php/license.txt`.
 
 ## Autor
 

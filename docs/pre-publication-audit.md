@@ -91,6 +91,7 @@ Resumen:
 
 - `mpdf/mpdf` v8.3.1 declara `GPL-2.0-only`.
 - `phpmailer/phpmailer` v6.12.0 declara `LGPL-2.1-only`.
+- PHP portable para Windows declara `PHP License 3.01`.
 - `electron` 30.5.1 declara `MIT`.
 - `electron-builder` 24.13.3 declara `MIT`.
 - Bootstrap 5.3.3, Bootstrap Icons 1.11.3, jQuery 3.7.1 y Chart.js 4.4.1 se usan por CDN y declaran licencias permisivas conocidas.
@@ -101,6 +102,8 @@ Detalle:
 
 Riesgo principal:
 
+- El instalador puede incluir PHP portable para Windows. Su licencia exige conservar el aviso de copyright, condiciones y atribucion del PHP Group. El build conserva `resources/php/license.txt`.
+- No usar el nombre PHP para promocionar Your Small Desk como producto oficial o derivado autorizado del PHP Group.
 - mPDF declara GPL-2.0-only. Antes de distribuir instaladores publicos con una licencia propia restrictiva, conviene revisar compatibilidad legal de distribuir mPDF junto con Your Small Desk.
 
 ## Recursos graficos
@@ -220,8 +223,10 @@ Build verificado correctamente antes de limpiar generados:
 
 - `desktop/dist/Your-Small-Desk-Setup-0.1.0.exe`
 - `desktop/dist/Your-Small-Desk-Portable-0.1.0.exe`
+- `desktop/dist/win-unpacked/resources/php/php.exe`
+- `desktop/dist/win-unpacked/resources/php/license.txt`
 
-La carpeta `desktop/dist/` se ha eliminado del arbol local para evitar subir instaladores por error. Regenerar con `cd desktop && npm run dist` antes de crear la Release.
+El build actual incluye PHP portable y sus extensiones criticas. Los instaladores siguen fuera del repositorio y deben subirse solo a GitHub Releases.
 
 ## Pendientes antes de publicar
 

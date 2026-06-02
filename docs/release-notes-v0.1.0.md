@@ -5,6 +5,7 @@ Primera version instalable de Your Small Desk para Windows.
 ## Incluye
 
 - Aplicacion de escritorio con Electron.
+- PHP portable incluido para Windows.
 - Base de datos local SQLite.
 - Asistente de configuracion inicial.
 - Datos de empresa personalizables.
@@ -25,6 +26,10 @@ Primera version instalable de Your Small Desk para Windows.
 3. Abre la app.
 4. Completa el setup inicial.
 5. Entra con el usuario creado.
+
+## Licencias de terceros
+
+Esta version incluye PHP portable para Windows bajo PHP License 3.01. El aviso de licencia de PHP se conserva dentro del instalador en `resources/php/license.txt`.
 
 ## Autor
 
