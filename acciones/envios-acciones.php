@@ -14,7 +14,7 @@ validarCsrf();
 
 if ($accion === 'estado_diagnostico_mailrelay') {
     $configuracion = obtenerConfiguracion();
-    $metodo = strtolower((string) ($configuracion['mailrelay_metodo_envio_facturas'] ?? 'smtp'));
+    $metodo = obtenerMetodoEnvioCorreo($configuracion);
     responderJson(true, 'Configuracion de correo cargada correctamente.', [
         'api' => obtenerEstadoConfiguracionMailrelay(),
         'smtp' => obtenerEstadoConfiguracionMailrelaySmtp(),
@@ -66,9 +66,7 @@ try {
     }
 
     $configuracion = obtenerConfiguracion();
-    $metodoEnvio = strtolower((string) ($configuracion['mailrelay_metodo_envio_facturas'] ?? 'smtp'));
-    $metodoEnvio = in_array($metodoEnvio, ['api', 'smtp'], true) ? $metodoEnvio : 'smtp';
-    $fallbackSmtp = (int) ($configuracion['mailrelay_smtp_fallback_activo'] ?? 1) === 1;
+    $metodoEnvio = obtenerMetodoEnvioCorreo($configuracion);
 
     if ($metodoEnvio === 'smtp') {
         $resultado = enviarFacturaPorMailrelaySmtp($idFactura, $destinatario, $asunto, $mensaje);
@@ -80,25 +78,7 @@ try {
                 'metodo' => 'api',
             ]);
         }
-        $resultadoApi = enviarFacturaPorMailrelayApi($idFactura, $destinatario, $asunto, $mensaje);
-        $httpCode = (int) ($resultadoApi['datos']['http_code'] ?? 0);
-        if (!$resultadoApi['ok'] && $httpCode === 422 && $fallbackSmtp) {
-            $resultado = enviarFacturaPorMailrelaySmtp($idFactura, $destinatario, $asunto, $mensaje);
-            if ($resultado['ok']) {
-                $resultado['mensaje'] = 'La API rechazo el adjunto; presupuesto enviado correctamente por SMTP.';
-            }
-            if (mailrelayPermiteDiagnostico()) {
-                $resultado['datos']['fallback_desde_api'] = [
-                    'http_code' => $httpCode,
-                    'curl_error' => $resultadoApi['datos']['curl_error'] ?? '',
-                    'respuesta_raw' => $resultadoApi['datos']['respuesta_raw'] ?? '',
-                    'respuesta_json' => $resultadoApi['datos']['respuesta_json'] ?? null,
-                    'payload_debug' => $resultadoApi['datos']['payload_debug'] ?? [],
-                ];
-            }
-        } else {
-            $resultado = $resultadoApi;
-        }
+        $resultado = enviarFacturaPorMailrelayApi($idFactura, $destinatario, $asunto, $mensaje);
     }
     responderJson($resultado['ok'], $resultado['mensaje'], $resultado['datos'] ?? []);
 } catch (Throwable $e) {

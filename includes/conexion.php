@@ -168,11 +168,11 @@ function asegurarDatosInicialesSqlite(PDO $pdo): void
         $pdo->exec(
             "INSERT INTO configuracion (
                 id_configuracion, nombre_empresa, mailrelay_api_url, mailrelay_api_key,
-                mailrelay_from_email, mailrelay_from_name, mailrelay_metodo_envio_facturas,
+                mailrelay_from_email, mailrelay_from_name, mailrelay_metodo_envio, mailrelay_metodo_envio_facturas,
                 mailrelay_smtp_fallback_activo, mailrelay_smtp_port, mailrelay_smtp_seguridad, setup_completado
             ) VALUES (
                 1, 'Your Small Desk', '" . MAILRELAY_API_URL_DEFAULT . "', '" . MAILRELAY_API_KEY_DEFAULT . "',
-                '" . MAILRELAY_FROM_EMAIL_DEFAULT . "', '" . MAILRELAY_FROM_NAME_DEFAULT . "', 'api',
+                '" . MAILRELAY_FROM_EMAIL_DEFAULT . "', '" . MAILRELAY_FROM_NAME_DEFAULT . "', 'api', 'api',
                 0, 587, 'tls', 0
             )"
         );
@@ -188,6 +188,18 @@ function asegurarMigracionesBasicas($conexion): void
         'pais_empresa' => esSqlite() ? 'TEXT DEFAULT NULL' : 'VARCHAR(120) DEFAULT NULL',
         'web_empresa' => esSqlite() ? 'TEXT DEFAULT NULL' : 'VARCHAR(180) DEFAULT NULL',
         'logo_documento' => esSqlite() ? 'TEXT DEFAULT NULL' : 'VARCHAR(255) DEFAULT NULL',
+        'mailrelay_metodo_envio' => esSqlite() ? "TEXT NOT NULL DEFAULT 'api'" : "VARCHAR(10) NOT NULL DEFAULT 'api'",
+        'mailrelay_api_url' => esSqlite() ? 'TEXT DEFAULT NULL' : 'VARCHAR(255) DEFAULT NULL',
+        'mailrelay_api_key' => esSqlite() ? 'TEXT DEFAULT NULL' : 'VARCHAR(255) DEFAULT NULL',
+        'mailrelay_from_email' => esSqlite() ? 'TEXT DEFAULT NULL' : 'VARCHAR(150) DEFAULT NULL',
+        'mailrelay_from_name' => esSqlite() ? 'TEXT DEFAULT NULL' : 'VARCHAR(150) DEFAULT NULL',
+        'mailrelay_smtp_host' => esSqlite() ? 'TEXT DEFAULT NULL' : 'VARCHAR(255) DEFAULT NULL',
+        'mailrelay_smtp_port' => esSqlite() ? 'INTEGER DEFAULT NULL' : 'INT DEFAULT NULL',
+        'mailrelay_smtp_usuario' => esSqlite() ? 'TEXT DEFAULT NULL' : 'VARCHAR(255) DEFAULT NULL',
+        'mailrelay_smtp_password' => esSqlite() ? 'TEXT DEFAULT NULL' : 'VARCHAR(255) DEFAULT NULL',
+        'mailrelay_smtp_seguridad' => esSqlite() ? "TEXT DEFAULT 'tls'" : "VARCHAR(20) DEFAULT 'tls'",
+        'mailrelay_bcc_activo' => esSqlite() ? 'INTEGER NOT NULL DEFAULT 0' : 'TINYINT(1) NOT NULL DEFAULT 0',
+        'mailrelay_bcc_email' => esSqlite() ? 'TEXT DEFAULT NULL' : 'VARCHAR(150) DEFAULT NULL',
     ];
 
     foreach ($columnas as $columna => $definicion) {

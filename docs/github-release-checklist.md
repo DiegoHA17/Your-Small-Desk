@@ -14,6 +14,11 @@
 - Activar en `php.ini` las extensiones `pdo_sqlite`, `sqlite3`, `mbstring`, `curl`, `fileinfo`, `gd` y `zip`.
 - Ejecutar `desktop/php/php.exe -m` y comprobar que aparecen `pdo_sqlite`, `sqlite3`, `fileinfo` y `mbstring`.
 - Confirmar que `desktop/php/license.txt` existe para conservar la licencia de PHP portable.
+- Ejecutar Composer para incluir mPDF y PHPMailer en el build.
+
+```powershell
+composer install --no-dev --optimize-autoloader
+```
 
 ## Compilar instalador
 

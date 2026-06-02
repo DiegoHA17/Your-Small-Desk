@@ -54,6 +54,7 @@ CREATE TABLE configuracion (
   mailrelay_from_name VARCHAR(150) DEFAULT NULL,
   mailrelay_bcc_email VARCHAR(150) DEFAULT NULL,
   mailrelay_bcc_activo TINYINT(1) NOT NULL DEFAULT 0,
+  mailrelay_metodo_envio VARCHAR(10) NOT NULL DEFAULT 'api',
   mailrelay_metodo_envio_facturas VARCHAR(10) NOT NULL DEFAULT 'smtp',
   mailrelay_smtp_fallback_activo TINYINT(1) NOT NULL DEFAULT 1,
   mailrelay_smtp_host VARCHAR(255) DEFAULT NULL,

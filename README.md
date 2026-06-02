@@ -7,7 +7,7 @@
 
 <p align="center">
   <a href="https://github.com/DiegoHA17/Your-Small-Desk/releases/latest">
-    <img src="https://img.shields.io/badge/Descargar-última%20versión-174D2A?style=for-the-badge&logo=windows&logoColor=white" alt="Descargar Your Small Desk">
+    <img src="https://img.shields.io/badge/Descargar-ultima%20version-174D2A?style=for-the-badge&logo=windows&logoColor=white" alt="Descargar Your Small Desk">
   </a>
 </p>
 
@@ -102,7 +102,7 @@ Solo se aceptan logos `png`, `jpg`, `jpeg` o `webp` de hasta 2 MB. No subas logo
 
 ## Correos / Mailrelay
 
-Mailrelay es opcional. Puedes configurarlo desde la app o mediante variables si preparas un entorno propio.
+Mailrelay es opcional. Puedes configurar API y SMTP por separado desde la app. El metodo activo decide cual se usa al enviar presupuestos.
 
 API:
 
@@ -120,6 +120,8 @@ SMTP:
 Si tu servidor bloquea SMTP, usa API. Si necesitas copia oculta real y el servidor permite SMTP, usa SMTP.
 
 No confundas SMTP con SSH: SSH es acceso remoto, SMTP es envio de correo.
+
+Si dejas vacia la API key al guardar la configuracion API, la clave anterior se conserva. Si dejas vacia la contrasena SMTP al guardar la configuracion SMTP, la contrasena anterior se conserva.
 
 ## Copias de seguridad
 
@@ -146,7 +148,7 @@ Guarda una copia periodica en un disco externo o nube privada.
 Instala dependencias PHP:
 
 ```powershell
-composer install
+composer install --no-dev --optimize-autoloader
 ```
 
 Ejecuta la version Electron:
@@ -179,6 +181,7 @@ desktop/php/*.dll
 Activa en `php.ini` las extensiones `pdo_sqlite`, `sqlite3`, `mbstring`, `curl`, `fileinfo`, `gd` y `zip`. La app comprueba al arrancar las extensiones criticas `pdo_sqlite`, `sqlite3`, `fileinfo` y `mbstring`.
 
 ```powershell
+composer install --no-dev --optimize-autoloader
 cd desktop
 npm install
 npm run dist

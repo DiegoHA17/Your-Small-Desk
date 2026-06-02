@@ -1,6 +1,6 @@
 {
   "name": "your-small-desk/app",
-  "description": "Aplicacion local para gestion de presupuestos de Your Small Desk",
+  "description": "Aplicacion local de escritorio para gestion de presupuestos y clientes.",
   "type": "project",
   "license": "proprietary",
   "require": {

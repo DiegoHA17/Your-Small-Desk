@@ -19,7 +19,6 @@ $(function () {
         e.preventDefault();
         const $form = $(this);
         const $boton = $form.find('button[type="submit"]');
-        const passwordSmtpInformada = ($form.find('[name="mailrelay_smtp_password"]').val() || '').trim() !== '';
         $boton.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Guardando...');
 
         $.ajax({
@@ -32,10 +31,6 @@ $(function () {
         }).done(function (res) {
             mostrarToast(res.mensaje, res.ok);
             if (res.ok) {
-                $form.find('[name="mailrelay_api_key"]').val('').attr('placeholder', 'Clave configurada');
-                if (passwordSmtpInformada) {
-                    $form.find('[name="mailrelay_smtp_password"]').val('').attr('placeholder', 'Contrasena configurada');
-                }
                 if (res.datos && res.datos.logo_documento_url) {
                     $('#logoDocumentoActual').attr('src', res.datos.logo_documento_url).removeClass('d-none');
                     $('#logoDocumentoVacio').addClass('d-none');
@@ -46,7 +41,7 @@ $(function () {
         }).fail(function () {
             mostrarToast('No se pudo guardar la configuracion.', false);
         }).always(function () {
-            $boton.prop('disabled', false).html('<i class="bi bi-save"></i> Guardar configuracion');
+            $boton.prop('disabled', false).html('<i class="bi bi-save"></i> Guardar datos de empresa');
         });
     });
 
@@ -58,14 +53,69 @@ $(function () {
         bootstrap.Tab.getOrCreateInstance(document.getElementById(configTabGuardada)).show();
     }
 
+    function postConfigCorreo($boton, datos, textoGuardando, textoFinal, callbackOk) {
+        $boton.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> ' + textoGuardando);
+        datos.csrf_token = window.JJH_CSRF || '';
+        $.post('acciones/configuracion-acciones.php', datos, function (res) {
+            mostrarToast(res.mensaje, res.ok);
+            if (res.ok && typeof callbackOk === 'function') {
+                callbackOk(res);
+            }
+        }, 'json').fail(function () {
+            mostrarToast('No se pudo guardar la configuracion de correo.', false);
+        }).always(function () {
+            $boton.prop('disabled', false).html(textoFinal);
+        });
+    }
+
     function actualizarAvisoBccMetodo() {
-        const bccConApi = $('[name="mailrelay_metodo_envio_facturas"]').val() === 'api'
+        const bccConApi = $('[name="mailrelay_metodo_envio"]').val() === 'api'
             && $('#mailrelayBccActivo').is(':checked');
         $('#alertaBccMetodoApi').toggleClass('d-none', !bccConApi);
     }
 
-    $('[name="mailrelay_metodo_envio_facturas"], #mailrelayBccActivo').on('change', actualizarAvisoBccMetodo);
+    $('[name="mailrelay_metodo_envio"], #mailrelayBccActivo').on('change', actualizarAvisoBccMetodo);
     actualizarAvisoBccMetodo();
+
+    $('#btnGuardarMetodoCorreo').on('click', function () {
+        postConfigCorreo($(this), {
+            accion: 'guardar_metodo_correo',
+            mailrelay_metodo_envio: $('[name="mailrelay_metodo_envio"]').val()
+        }, 'Guardando...', '<i class="bi bi-save"></i> Guardar metodo');
+    });
+
+    $('#btnGuardarConfigApi').on('click', function () {
+        postConfigCorreo($(this), {
+            accion: 'guardar_config_api',
+            mailrelay_api_url: $('[name="mailrelay_api_url"]').val(),
+            mailrelay_api_key: $('[name="mailrelay_api_key"]').val(),
+            mailrelay_from_email: $('[name="mailrelay_from_email"]').val(),
+            mailrelay_from_name: $('[name="mailrelay_from_name"]').val()
+        }, 'Guardando...', '<i class="bi bi-save"></i> Guardar configuracion API', function () {
+            $('[name="mailrelay_api_key"]').val('').attr('placeholder', 'Clave configurada');
+        });
+    });
+
+    $('#btnGuardarConfigSmtp').on('click', function () {
+        postConfigCorreo($(this), {
+            accion: 'guardar_config_smtp',
+            mailrelay_smtp_host: $('[name="mailrelay_smtp_host"]').val(),
+            mailrelay_smtp_port: $('[name="mailrelay_smtp_port"]').val(),
+            mailrelay_smtp_usuario: $('[name="mailrelay_smtp_usuario"]').val(),
+            mailrelay_smtp_password: $('[name="mailrelay_smtp_password"]').val(),
+            mailrelay_smtp_seguridad: $('[name="mailrelay_smtp_seguridad"]').val()
+        }, 'Guardando...', '<i class="bi bi-save"></i> Guardar configuracion SMTP', function () {
+            $('[name="mailrelay_smtp_password"]').val('').attr('placeholder', 'Contrasena configurada');
+        });
+    });
+
+    $('#btnGuardarConfigBcc').on('click', function () {
+        postConfigCorreo($(this), {
+            accion: 'guardar_config_bcc',
+            mailrelay_bcc_activo: $('#mailrelayBccActivo').is(':checked') ? '1' : '',
+            mailrelay_bcc_email: $('[name="mailrelay_bcc_email"]').val()
+        }, 'Guardando...', '<i class="bi bi-save"></i> Guardar BCC', actualizarAvisoBccMetodo);
+    });
 
     $('#btnProbarMailrelay').on('click', function () {
         const destinatario = ($('#mailrelayEmailPrueba').val() || '').trim();
@@ -81,12 +131,10 @@ $(function () {
         const $diagnostico = $('#mailrelayDiagnostico').addClass('d-none').text('');
         $boton.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Probando...');
 
-        $.post('acciones/envios-acciones.php', {
-            accion: 'probar_mailrelay_simple',
+        $.post('acciones/configuracion-acciones.php', {
+            accion: 'probar_mailrelay_api',
             csrf_token: window.JJH_CSRF || '',
-            destinatario: destinatario,
-            asunto: 'Prueba Mailrelay - Your Small Desk',
-            mensaje: 'Mensaje de prueba enviado desde Your Small Desk para validar la configuracion de Mailrelay.'
+            destinatario: destinatario
         }, function (res) {
             mostrarToast(res.mensaje, res.ok);
             if (res.datos && Object.keys(res.datos).length) {
@@ -95,41 +143,7 @@ $(function () {
         }, 'json').fail(function () {
             mostrarToast('No se pudo ejecutar la prueba de Mailrelay.', false);
         }).always(function () {
-            $boton.prop('disabled', false).html('<i class="bi bi-envelope-check"></i> Probar envio Mailrelay');
-        });
-    });
-
-    $('#btnProbarMailrelayTxt').on('click', function () {
-        const destinatario = ($('#mailrelayEmailPrueba').val() || '').trim();
-        const variante = ($('#mailrelayVarianteAdjunto').val() || 'a').toLowerCase();
-        if (!destinatario) {
-            mostrarToast('Indica un email de prueba.', false);
-            return;
-        }
-        if (!confirm('Se enviara un correo real con el archivo prueba.txt (' + variante.toUpperCase() + ') a ' + destinatario + '. Continuar?')) {
-            return;
-        }
-
-        const $boton = $(this);
-        const $diagnostico = $('#mailrelayDiagnostico').addClass('d-none').text('');
-        $boton.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Probando...');
-
-        $.post('acciones/envios-acciones.php', {
-            accion: 'probar_mailrelay_adjunto_txt',
-            csrf_token: window.JJH_CSRF || '',
-            destinatario: destinatario,
-            variante_adjunto: variante,
-            asunto: 'Prueba de adjunto TXT - Your Small Desk',
-            mensaje: 'Prueba de adjunto desde Your Small Desk.'
-        }, function (res) {
-            mostrarToast(res.mensaje, res.ok);
-            if (res.datos && Object.keys(res.datos).length) {
-                $diagnostico.removeClass('d-none').text(JSON.stringify(res.datos, null, 2));
-            }
-        }, 'json').fail(function () {
-            mostrarToast('No se pudo ejecutar la prueba de adjunto.', false);
-        }).always(function () {
-            $boton.prop('disabled', false).html('<i class="bi bi-paperclip"></i> Probar adjunto TXT');
+            $boton.prop('disabled', false).html('<i class="bi bi-envelope-check"></i> Probar API');
         });
     });
 
@@ -147,12 +161,10 @@ $(function () {
         const $diagnostico = $('#mailrelayDiagnosticoSmtp').addClass('d-none').text('');
         $boton.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Probando...');
 
-        $.post('acciones/envios-acciones.php', {
-            accion: 'probar_mailrelay_smtp_simple',
+        $.post('acciones/configuracion-acciones.php', {
+            accion: 'probar_mailrelay_smtp',
             csrf_token: window.JJH_CSRF || '',
-            destinatario: destinatario,
-            asunto: 'Prueba SMTP Your Small Desk',
-            mensaje: 'Prueba de envio SMTP desde Your Small Desk.'
+            destinatario: destinatario
         }, function (res) {
             mostrarToast(res.mensaje, res.ok);
             if (res.datos && Object.keys(res.datos).length) {
@@ -242,7 +254,7 @@ function mostrarDiagnosticoEnvioMailrelay(datos) {
     if (!Object.prototype.hasOwnProperty.call(datos, 'respuesta_raw')
         && !Object.prototype.hasOwnProperty.call(datos, 'curl_error')
         && !Object.prototype.hasOwnProperty.call(datos, 'error_phpmailer')
-        && !Object.prototype.hasOwnProperty.call(datos, 'fallback_desde_api')) {
+        && !Object.prototype.hasOwnProperty.call(datos, 'respuesta_json')) {
         return;
     }
 

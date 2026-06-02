@@ -92,7 +92,7 @@ Recomendacion: copia esos elementos periodicamente en un disco externo o nube pr
 
 ## 8. Mailrelay y correos
 
-Mailrelay es opcional. La app puede funcionar sin correo si solo descargas PDFs o usas WhatsApp.
+Mailrelay es opcional. La app puede funcionar sin correo si solo descargas PDFs o usas WhatsApp. La configuracion API y la configuracion SMTP se guardan por separado.
 
 API:
 
@@ -109,6 +109,8 @@ SMTP:
 - puede fallar si el proveedor bloquea salida SMTP.
 
 Si tu servidor bloquea SMTP, usa API. Si necesitas copia oculta real y el servidor permite SMTP, usa SMTP.
+
+El metodo activo decide si los presupuestos salen por API o por SMTP. Guardar API no borra SMTP. Guardar SMTP no borra API. Si dejas vacia una clave ya configurada, se conserva el valor anterior.
 
 Si Mailrelay indica que la cuenta esta en revision, hay que esperar la aprobacion o contactar con soporte de Mailrelay. La app no puede desbloquear una cuenta pendiente de revision.
 

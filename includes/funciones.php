@@ -52,6 +52,7 @@ function configuracionPorDefecto(): array
         'mailrelay_from_name' => MAILRELAY_FROM_NAME_DEFAULT,
         'mailrelay_bcc_email' => '',
         'mailrelay_bcc_activo' => 0,
+        'mailrelay_metodo_envio' => 'api',
         'mailrelay_metodo_envio_facturas' => 'smtp',
         'mailrelay_smtp_fallback_activo' => 1,
         'mailrelay_smtp_host' => '',
@@ -66,6 +67,12 @@ function configuracionPorDefecto(): array
         'smtp_from_email' => SMTP_FROM_DEFAULT,
         'smtp_from_name' => SMTP_FROM_NAME_DEFAULT,
     ];
+}
+
+function obtenerMetodoEnvioCorreo(array $configuracion): string
+{
+    $metodo = strtolower((string) ($configuracion['mailrelay_metodo_envio'] ?? $configuracion['mailrelay_metodo_envio_facturas'] ?? 'smtp'));
+    return in_array($metodo, ['api', 'smtp'], true) ? $metodo : 'smtp';
 }
 
 function obtenerConfiguracionPersistida(): array

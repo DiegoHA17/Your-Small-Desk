@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 require_once __DIR__ . '/includes/seguridad.php';
 require_once __DIR__ . '/includes/funciones.php';
 require_once __DIR__ . '/includes/logo-documento.php';
@@ -24,32 +24,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $webEmpresa = limpiarCadena($_POST['web_empresa'] ?? '');
     $logoDocumento = (string) ($configuracionGuardada['logo_documento'] ?? '');
     $eliminarLogoDocumento = isset($_POST['eliminar_logo_documento']);
-    $mailrelayApiUrl = limpiarCadena($_POST['mailrelay_api_url'] ?? '');
-    $mailrelayApiKeyNueva = trim((string) ($_POST['mailrelay_api_key'] ?? ''));
-    $mailrelayApiKey = $mailrelayApiKeyNueva !== ''
-        ? $mailrelayApiKeyNueva
-        : (string) ($configuracionGuardada['mailrelay_api_key'] ?? MAILRELAY_API_KEY_DEFAULT);
-    $mailrelayFromEmail = limpiarCadena($_POST['mailrelay_from_email'] ?? '');
-    $mailrelayFromName = limpiarCadena($_POST['mailrelay_from_name'] ?? '');
-    $mailrelayBccEmail = limpiarCadena($_POST['mailrelay_bcc_email'] ?? '');
-    $mailrelayBccActivo = isset($_POST['mailrelay_bcc_activo']) ? 1 : 0;
-    $mailrelayMetodoEnvio = strtolower(limpiarCadena($_POST['mailrelay_metodo_envio_facturas'] ?? 'smtp'));
-    $mailrelaySmtpFallbackActivo = isset($_POST['mailrelay_smtp_fallback_activo']) ? 1 : 0;
-    $mailrelaySmtpHost = limpiarCadena($_POST['mailrelay_smtp_host'] ?? '');
-    $mailrelaySmtpPort = (int) ($_POST['mailrelay_smtp_port'] ?? 587);
-    $mailrelaySmtpUsuario = limpiarCadena($_POST['mailrelay_smtp_usuario'] ?? '');
-    $mailrelaySmtpPasswordNueva = trim((string) ($_POST['mailrelay_smtp_password'] ?? ''));
-    $mailrelaySmtpPassword = $mailrelaySmtpPasswordNueva !== ''
-        ? $mailrelaySmtpPasswordNueva
-        : (string) ($configuracionGuardada['mailrelay_smtp_password'] ?? '');
-    $mailrelaySmtpSeguridad = strtolower(limpiarCadena($_POST['mailrelay_smtp_seguridad'] ?? 'tls'));
-
-    $smtpHost = (string) ($configuracionGuardada['smtp_host'] ?? SMTP_HOST_DEFAULT);
-    $smtpPort = (int) ($configuracionGuardada['smtp_port'] ?? SMTP_PORT_DEFAULT);
-    $smtpUsuario = (string) ($configuracionGuardada['smtp_usuario'] ?? SMTP_USER_DEFAULT);
-    $smtpPassword = (string) ($configuracionGuardada['smtp_password'] ?? SMTP_PASS_DEFAULT);
-    $smtpFromEmail = (string) ($configuracionGuardada['smtp_from_email'] ?? SMTP_FROM_DEFAULT);
-    $smtpFromName = (string) ($configuracionGuardada['smtp_from_name'] ?? SMTP_FROM_NAME_DEFAULT);
 
     if ($nombreEmpresa === '' && $nombreComercial !== '') {
         $nombreEmpresa = $nombreComercial;
@@ -66,34 +40,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($emailEmpresa !== '' && !filter_var($emailEmpresa, FILTER_VALIDATE_EMAIL)) {
         responderJson(false, 'Indica un email de empresa valido.');
     }
-    if ($mailrelayApiUrl === '' || !filter_var($mailrelayApiUrl, FILTER_VALIDATE_URL)) {
-        responderJson(false, 'Indica una URL valida para la API de Mailrelay.');
-    }
-    $rutaMailrelayApi = rtrim((string) parse_url($mailrelayApiUrl, PHP_URL_PATH), '/');
-    if (!str_ends_with($rutaMailrelayApi, '/api/v1/send_emails')) {
-        responderJson(false, 'La URL de Mailrelay debe terminar en /api/v1/send_emails.');
-    }
-    if ($mailrelayApiKey === '' || $mailrelayApiKey === MAILRELAY_API_KEY_DEFAULT) {
-        responderJson(false, 'Indica la API key de Mailrelay.');
-    }
-    if (!filter_var($mailrelayFromEmail, FILTER_VALIDATE_EMAIL)) {
-        responderJson(false, 'Indica un email remitente valido.');
-    }
-    if ($mailrelayFromName === '') {
-        responderJson(false, 'Indica el nombre remitente.');
-    }
-    if ($mailrelayBccActivo === 1 && !filter_var($mailrelayBccEmail, FILTER_VALIDATE_EMAIL)) {
-        responderJson(false, 'Indica un email valido para la copia oculta.');
-    }
-    if (!in_array($mailrelayMetodoEnvio, ['api', 'smtp'], true)) {
-        responderJson(false, 'Selecciona un metodo de envio de presupuestos valido.');
-    }
-    if (!in_array($mailrelaySmtpSeguridad, ['tls', 'ssl', 'ninguna'], true)) {
-        responderJson(false, 'Selecciona una seguridad SMTP valida.');
-    }
-    if ($mailrelaySmtpPort <= 0 || $mailrelaySmtpPort > 65535) {
-        responderJson(false, 'Indica un puerto SMTP valido.');
-    }
 
     try {
         if ($eliminarLogoDocumento) {
@@ -105,111 +51,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (esSqlite()) {
             $stmtExiste = $conexion->prepare('SELECT 1 FROM configuracion WHERE id_configuracion = 1 LIMIT 1');
             $stmtExiste->execute();
-            $existeConfiguracion = (bool) $stmtExiste->get_result()->fetch_assoc();
-
-            $sqlConfiguracionSqlite = $existeConfiguracion
-                ? 'UPDATE configuracion SET
-                    nombre_empresa = ?, email_empresa = ?, telefono_empresa = ?, direccion_empresa = ?, nif_cif_empresa = ?,
-                    ciudad_empresa = ?, provincia_empresa = ?, codigo_postal_empresa = ?,
-                    mailrelay_api_url = ?, mailrelay_api_key = ?, mailrelay_from_email = ?, mailrelay_from_name = ?,
-                    mailrelay_bcc_email = ?, mailrelay_bcc_activo = ?,
-                    mailrelay_metodo_envio_facturas = ?, mailrelay_smtp_fallback_activo = ?,
-                    mailrelay_smtp_host = ?, mailrelay_smtp_port = ?, mailrelay_smtp_usuario = ?, mailrelay_smtp_password = ?, mailrelay_smtp_seguridad = ?,
-                    smtp_host = ?, smtp_port = ?, smtp_usuario = ?, smtp_password = ?, smtp_from_email = ?, smtp_from_name = ?
-                   WHERE id_configuracion = 1'
-                : 'INSERT INTO configuracion
-                   (id_configuracion, nombre_empresa, email_empresa, telefono_empresa, direccion_empresa, nif_cif_empresa,
-                    ciudad_empresa, provincia_empresa, codigo_postal_empresa,
-                    mailrelay_api_url, mailrelay_api_key, mailrelay_from_email, mailrelay_from_name,
-                    mailrelay_bcc_email, mailrelay_bcc_activo,
-                    mailrelay_metodo_envio_facturas, mailrelay_smtp_fallback_activo,
-                    mailrelay_smtp_host, mailrelay_smtp_port, mailrelay_smtp_usuario, mailrelay_smtp_password, mailrelay_smtp_seguridad,
-                    smtp_host, smtp_port, smtp_usuario, smtp_password, smtp_from_email, smtp_from_name)
-                   VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
-
-            $stmt = $conexion->prepare($sqlConfiguracionSqlite);
-            $tiposConfiguracion = str_repeat('s', 13) . 'isisissssissss';
-            $stmt->bind_param(
-                $tiposConfiguracion,
-                $nombreEmpresa,
-                $emailEmpresa,
-                $telefonoEmpresa,
-                $direccionEmpresa,
-                $nifCifEmpresa,
-                $ciudadEmpresa,
-                $provinciaEmpresa,
-                $codigoPostalEmpresa,
-                $mailrelayApiUrl,
-                $mailrelayApiKey,
-                $mailrelayFromEmail,
-                $mailrelayFromName,
-                $mailrelayBccEmail,
-                $mailrelayBccActivo,
-                $mailrelayMetodoEnvio,
-                $mailrelaySmtpFallbackActivo,
-                $mailrelaySmtpHost,
-                $mailrelaySmtpPort,
-                $mailrelaySmtpUsuario,
-                $mailrelaySmtpPassword,
-                $mailrelaySmtpSeguridad,
-                $smtpHost,
-                $smtpPort,
-                $smtpUsuario,
-                $smtpPassword,
-                $smtpFromEmail,
-                $smtpFromName
-            );
-            $stmt->execute();
-            $stmtExtra = $conexion->prepare('UPDATE configuracion SET nombre_comercial = ?, nombre_fiscal = ?, pais_empresa = ?, web_empresa = ?, logo_documento = ? WHERE id_configuracion = 1');
-            $stmtExtra->bind_param('sssss', $nombreComercial, $nombreFiscal, $paisEmpresa, $webEmpresa, $logoDocumento);
-            $stmtExtra->execute();
-            responderJson(true, 'Configuracion guardada correctamente.', [
-                'logo_documento_url' => $logoDocumento,
-            ]);
+            if (!$stmtExiste->get_result()->fetch_assoc()) {
+                $stmtInsert = $conexion->prepare('INSERT INTO configuracion (id_configuracion, nombre_empresa) VALUES (1, ?)');
+                $stmtInsert->bind_param('s', $nombreEmpresa);
+                $stmtInsert->execute();
+            }
+        } else {
+            $stmtBase = $conexion->prepare('INSERT INTO configuracion (id_configuracion, nombre_empresa) VALUES (1, ?) ON DUPLICATE KEY UPDATE nombre_empresa = nombre_empresa');
+            $stmtBase->bind_param('s', $nombreEmpresa);
+            $stmtBase->execute();
         }
 
         $stmt = $conexion->prepare(
-            'INSERT INTO configuracion
-             (id_configuracion, nombre_empresa, email_empresa, telefono_empresa, direccion_empresa, nif_cif_empresa,
-              ciudad_empresa, provincia_empresa, codigo_postal_empresa,
-              mailrelay_api_url, mailrelay_api_key, mailrelay_from_email, mailrelay_from_name,
-              mailrelay_bcc_email, mailrelay_bcc_activo,
-              mailrelay_metodo_envio_facturas, mailrelay_smtp_fallback_activo,
-              mailrelay_smtp_host, mailrelay_smtp_port, mailrelay_smtp_usuario, mailrelay_smtp_password, mailrelay_smtp_seguridad,
-              smtp_host, smtp_port, smtp_usuario, smtp_password, smtp_from_email, smtp_from_name)
-             VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-             ON DUPLICATE KEY UPDATE
-              nombre_empresa = VALUES(nombre_empresa),
-              email_empresa = VALUES(email_empresa),
-              telefono_empresa = VALUES(telefono_empresa),
-              direccion_empresa = VALUES(direccion_empresa),
-              nif_cif_empresa = VALUES(nif_cif_empresa),
-              ciudad_empresa = VALUES(ciudad_empresa),
-              provincia_empresa = VALUES(provincia_empresa),
-              codigo_postal_empresa = VALUES(codigo_postal_empresa),
-              mailrelay_api_url = VALUES(mailrelay_api_url),
-              mailrelay_api_key = VALUES(mailrelay_api_key),
-              mailrelay_from_email = VALUES(mailrelay_from_email),
-              mailrelay_from_name = VALUES(mailrelay_from_name),
-              mailrelay_bcc_email = VALUES(mailrelay_bcc_email),
-              mailrelay_bcc_activo = VALUES(mailrelay_bcc_activo),
-              mailrelay_metodo_envio_facturas = VALUES(mailrelay_metodo_envio_facturas),
-              mailrelay_smtp_fallback_activo = VALUES(mailrelay_smtp_fallback_activo),
-              mailrelay_smtp_host = VALUES(mailrelay_smtp_host),
-              mailrelay_smtp_port = VALUES(mailrelay_smtp_port),
-              mailrelay_smtp_usuario = VALUES(mailrelay_smtp_usuario),
-              mailrelay_smtp_password = VALUES(mailrelay_smtp_password),
-              mailrelay_smtp_seguridad = VALUES(mailrelay_smtp_seguridad),
-              smtp_host = VALUES(smtp_host),
-              smtp_port = VALUES(smtp_port),
-              smtp_usuario = VALUES(smtp_usuario),
-              smtp_password = VALUES(smtp_password),
-              smtp_from_email = VALUES(smtp_from_email),
-              smtp_from_name = VALUES(smtp_from_name)'
+            'UPDATE configuracion SET
+             nombre_empresa = ?, email_empresa = ?, telefono_empresa = ?, direccion_empresa = ?, nif_cif_empresa = ?,
+             ciudad_empresa = ?, provincia_empresa = ?, codigo_postal_empresa = ?, nombre_comercial = ?, nombre_fiscal = ?,
+             pais_empresa = ?, web_empresa = ?, logo_documento = ?
+             WHERE id_configuracion = 1'
         );
-        $tiposConfiguracion = str_repeat('s', 13) . 'isisissssissss';
         $stmt->bind_param(
-            $tiposConfiguracion,
+            'sssssssssssss',
             $nombreEmpresa,
             $emailEmpresa,
             $telefonoEmpresa,
@@ -218,43 +79,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $ciudadEmpresa,
             $provinciaEmpresa,
             $codigoPostalEmpresa,
-            $mailrelayApiUrl,
-            $mailrelayApiKey,
-            $mailrelayFromEmail,
-            $mailrelayFromName,
-            $mailrelayBccEmail,
-            $mailrelayBccActivo,
-            $mailrelayMetodoEnvio,
-            $mailrelaySmtpFallbackActivo,
-            $mailrelaySmtpHost,
-            $mailrelaySmtpPort,
-            $mailrelaySmtpUsuario,
-            $mailrelaySmtpPassword,
-            $mailrelaySmtpSeguridad,
-            $smtpHost,
-            $smtpPort,
-            $smtpUsuario,
-            $smtpPassword,
-            $smtpFromEmail,
-            $smtpFromName
+            $nombreComercial,
+            $nombreFiscal,
+            $paisEmpresa,
+            $webEmpresa,
+            $logoDocumento
         );
         $stmt->execute();
-        $stmtExtra = $conexion->prepare('UPDATE configuracion SET nombre_comercial = ?, nombre_fiscal = ?, pais_empresa = ?, web_empresa = ?, logo_documento = ? WHERE id_configuracion = 1');
-        $stmtExtra->bind_param('sssss', $nombreComercial, $nombreFiscal, $paisEmpresa, $webEmpresa, $logoDocumento);
-        $stmtExtra->execute();
-        responderJson(true, 'Configuracion guardada correctamente.', [
+        responderJson(true, 'Datos de empresa guardados correctamente.', [
             'logo_documento_url' => $logoDocumento,
         ]);
     } catch (Throwable $e) {
         registrarError($e);
-        responderJson(false, 'No se pudo guardar la configuracion.');
+        responderJson(false, 'No se pudieron guardar los datos de empresa.');
     }
+
 }
 
 $configuracion = obtenerConfiguracion();
 $claveRealConfigurada = !empty($configuracion['mailrelay_api_key'])
     && $configuracion['mailrelay_api_key'] !== MAILRELAY_API_KEY_DEFAULT;
 $passwordSmtpConfigurada = !empty($configuracion['mailrelay_smtp_password']);
+$metodoEnvioActual = obtenerMetodoEnvioCorreo($configuracion);
 $tituloPagina = 'Configuracion';
 $jsPagina = 'configuracion.js';
 $jsExtra = ['manual.js'];
@@ -332,7 +178,7 @@ require __DIR__ . '/includes/layout-header.php';
                         </div>
                         <div class="col-12">
                             <label class="form-label">URL API Mailrelay</label>
-                            <input class="form-control" type="url" name="mailrelay_api_url" value="<?php echo htmlspecialchars($configuracion['mailrelay_api_url'] ?? MAILRELAY_API_URL_DEFAULT, ENT_QUOTES, 'UTF-8'); ?>" required>
+                            <input class="form-control" type="url" name="mailrelay_api_url" value="<?php echo htmlspecialchars($configuracion['mailrelay_api_url'] ?? MAILRELAY_API_URL_DEFAULT, ENT_QUOTES, 'UTF-8'); ?>">
                         </div>
                         <div class="col-12">
                             <label class="form-label">API Key Mailrelay</label>
@@ -340,27 +186,28 @@ require __DIR__ . '/includes/layout-header.php';
                             <div class="form-text">La API key se usa solo desde el servidor y se conserva si dejas el campo vacio.</div>
                         </div>
                         <div class="col-12">
-                            <div class="alert alert-light border mb-0 small">Las pruebas API usan el email y nombre remitente definidos en la pestana <strong>SMTP presupuestos</strong>.</div>
+                            <label class="form-label">Email remitente API</label>
+                            <input class="form-control" type="email" name="mailrelay_from_email" value="<?php echo htmlspecialchars($configuracion['mailrelay_from_email'] ?? MAILRELAY_FROM_EMAIL_DEFAULT, ENT_QUOTES, 'UTF-8'); ?>" placeholder="facturas@tu-dominio.com">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Nombre remitente API</label>
+                            <input class="form-control" name="mailrelay_from_name" value="<?php echo htmlspecialchars($configuracion['mailrelay_from_name'] ?? MAILRELAY_FROM_NAME_DEFAULT, ENT_QUOTES, 'UTF-8'); ?>">
+                            <div class="form-text">Estos datos se usan como remitente compartido para API y SMTP.</div>
+                        </div>
+                        <div class="col-12">
+                            <button class="btn btn-primary" type="button" id="btnGuardarConfigApi">
+                                <i class="bi bi-save"></i> Guardar configuracion API
+                            </button>
                         </div>
                         <div class="col-12 pt-3 border-top mt-4">
                             <label class="form-label">Email para pruebas API</label>
                             <div class="input-group mb-2">
                                 <input class="form-control" type="email" id="mailrelayEmailPrueba" placeholder="destinatario@ejemplo.com">
                                 <button class="btn btn-outline-primary" type="button" id="btnProbarMailrelay">
-                                    <i class="bi bi-envelope-check"></i> Probar envio Mailrelay
+                                    <i class="bi bi-envelope-check"></i> Probar API
                                 </button>
                             </div>
-                            <div class="input-group">
-                                <select class="form-select" id="mailrelayVarianteAdjunto" aria-label="Variante de payload de adjunto">
-                                    <option value="a">Variante A: content_id vacio</option>
-                                    <option value="b">Variante B: sin content_id</option>
-                                    <option value="c">Variante C: sin text_part_auto</option>
-                                </select>
-                                <button class="btn btn-outline-primary" type="button" id="btnProbarMailrelayTxt">
-                                    <i class="bi bi-paperclip"></i> Probar TXT
-                                </button>
-                            </div>
-                            <div class="form-text">Estas pruebas envian un correo real al destinatario indicado y, en local/dev, muestran la respuesta depurada de Mailrelay.</div>
+                            <div class="form-text">Esta prueba envia un correo real al destinatario indicado y no adjunta PDF.</div>
                             <pre class="d-none bg-light border rounded p-3 mt-3 small text-break" id="mailrelayDiagnostico"></pre>
                         </div>
                     </div>
@@ -374,17 +221,16 @@ require __DIR__ . '/includes/layout-header.php';
                     <div class="row g-3 settings-fields">
                         <div class="col-lg-7">
                             <label class="form-label">Metodo de envio</label>
-                            <select class="form-select" name="mailrelay_metodo_envio_facturas">
-                                <option value="smtp" <?php echo ($configuracion['mailrelay_metodo_envio_facturas'] ?? 'smtp') === 'smtp' ? 'selected' : ''; ?>>SMTP Mailrelay (requiere conectividad SMTP)</option>
-                                <option value="api" <?php echo ($configuracion['mailrelay_metodo_envio_facturas'] ?? 'smtp') === 'api' ? 'selected' : ''; ?>>API Mailrelay (recomendado si SMTP esta bloqueado)</option>
+                            <select class="form-select" name="mailrelay_metodo_envio">
+                                <option value="api" <?php echo $metodoEnvioActual === 'api' ? 'selected' : ''; ?>>API Mailrelay (HTTPS)</option>
+                                <option value="smtp" <?php echo $metodoEnvioActual === 'smtp' ? 'selected' : ''; ?>>SMTP Mailrelay (465/587)</option>
                             </select>
-                            <div class="form-text">SMTP permite copia oculta real, pero algunos servidores bloquean la salida SMTP. Prueba API y conectividad SMTP antes de seleccionar el metodo.</div>
+                            <div class="form-text">API usa HTTPS y suele funcionar mejor si tu red o servidor bloquea SMTP. SMTP permite envio clasico y copia oculta real si el entorno lo permite.</div>
                         </div>
                         <div class="col-lg-5 d-flex align-items-end pb-2">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" role="switch" name="mailrelay_smtp_fallback_activo" id="mailrelaySmtpFallbackActivo" value="1" <?php echo !isset($configuracion['mailrelay_smtp_fallback_activo']) || !empty($configuracion['mailrelay_smtp_fallback_activo']) ? 'checked' : ''; ?>>
-                                <label class="form-check-label" for="mailrelaySmtpFallbackActivo">Fallback tras HTTP 422</label>
-                            </div>
+                            <button class="btn btn-primary" type="button" id="btnGuardarMetodoCorreo">
+                                <i class="bi bi-save"></i> Guardar metodo
+                            </button>
                         </div>
                         <div class="col-md-8">
                             <label class="form-label">SMTP host</label>
@@ -409,16 +255,13 @@ require __DIR__ . '/includes/layout-header.php';
                                 <?php $seguridadSmtp = $configuracion['mailrelay_smtp_seguridad'] ?? 'tls'; ?>
                                 <option value="tls" <?php echo $seguridadSmtp === 'tls' ? 'selected' : ''; ?>>TLS / STARTTLS</option>
                                 <option value="ssl" <?php echo $seguridadSmtp === 'ssl' ? 'selected' : ''; ?>>SSL / SMTPS</option>
-                                <option value="ninguna" <?php echo $seguridadSmtp === 'ninguna' ? 'selected' : ''; ?>>Ninguna</option>
+                                <option value="none" <?php echo in_array($seguridadSmtp, ['none', 'ninguna'], true) ? 'selected' : ''; ?>>Ninguna</option>
                             </select>
                         </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Email remitente</label>
-                            <input class="form-control" type="email" name="mailrelay_from_email" value="<?php echo htmlspecialchars($configuracion['mailrelay_from_email'] ?? MAILRELAY_FROM_EMAIL_DEFAULT, ENT_QUOTES, 'UTF-8'); ?>" placeholder="facturas@tu-dominio.com" required>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Nombre remitente</label>
-                            <input class="form-control" name="mailrelay_from_name" value="<?php echo htmlspecialchars($configuracion['mailrelay_from_name'] ?? MAILRELAY_FROM_NAME_DEFAULT, ENT_QUOTES, 'UTF-8'); ?>" required>
+                        <div class="col-md-8 d-flex align-items-end">
+                            <button class="btn btn-primary" type="button" id="btnGuardarConfigSmtp">
+                                <i class="bi bi-save"></i> Guardar configuracion SMTP
+                            </button>
                         </div>
                         <div class="col-12 pt-3 border-top mt-4">
                             <div class="fw-semibold mb-2">Copia oculta de respaldo</div>
@@ -434,8 +277,11 @@ require __DIR__ . '/includes/layout-header.php';
                                     <input class="form-control" type="email" name="mailrelay_bcc_email" value="<?php echo htmlspecialchars($configuracion['mailrelay_bcc_email'] ?? '', ENT_QUOTES, 'UTF-8'); ?>" placeholder="tu-correo@dominio.com">
                                 </div>
                             </div>
-                            <div class="form-text">Si activas esta opcion, recibiras una copia oculta del mismo correo enviado al cliente. El cliente no vera este correo.</div>
-                            <div class="alert alert-warning mt-3 mb-0 <?php echo (!empty($configuracion['mailrelay_bcc_activo']) && ($configuracion['mailrelay_metodo_envio_facturas'] ?? 'smtp') === 'api') ? '' : 'd-none'; ?>" id="alertaBccMetodoApi" role="alert">
+                            <button class="btn btn-primary mt-3" type="button" id="btnGuardarConfigBcc">
+                                <i class="bi bi-save"></i> Guardar BCC
+                            </button>
+                            <div class="form-text">La copia oculta real solo se garantiza con SMTP.</div>
+                            <div class="alert alert-warning mt-3 mb-0 <?php echo (!empty($configuracion['mailrelay_bcc_activo']) && $metodoEnvioActual === 'api') ? '' : 'd-none'; ?>" id="alertaBccMetodoApi" role="alert">
                                 Advertencia: la copia oculta real puede no estar disponible mediante API. Usa SMTP para garantizar BCC/CCO real.
                             </div>
                         </div>
@@ -494,7 +340,7 @@ require __DIR__ . '/includes/layout-header.php';
         </div>
     </div>
     <div class="mt-4">
-        <button class="btn btn-primary" type="submit"><i class="bi bi-save"></i> Guardar configuracion</button>
+        <button class="btn btn-primary" type="submit"><i class="bi bi-save"></i> Guardar datos de empresa</button>
     </div>
 </form>
 
@@ -672,7 +518,7 @@ La vista de trimestres ayuda a revisar cobrados, pendientes y rechazados. Sirve 
 Guarda una copia de data/jjh_space.sqlite y de la carpeta storage/. Ahi estan la base de datos, PDFs generados, logos y archivos de trabajo.
 
 8. Mailrelay y correos
-La API usa HTTPS y suele funcionar incluso en servidores que bloquean SMTP. SMTP usa puertos de correo como 465 o 587, puede estar bloqueado por algunos proveedores y es recomendable si necesitas copia oculta real BCC y el servidor lo permite.
+La API usa HTTPS y suele funcionar incluso en servidores que bloquean SMTP. SMTP usa puertos de correo como 465 o 587, puede estar bloqueado por algunos proveedores y es recomendable si necesitas copia oculta real BCC y el servidor lo permite. La configuracion API y SMTP se guarda por separado. Guardar API no borra SMTP y guardar SMTP no borra API.
 
 9. Servidores sin salida SMTP
 Algunos servidores bloquean puertos SMTP. En ese caso usa API. SMTP no es SSH: SSH sirve para acceso remoto y SMTP sirve para enviar correo.
@@ -696,7 +542,7 @@ Your Small Desk tiene uso gratuito limitado para autonomos, pequenos negocios, u
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
             <div class="modal-body license-summary">
-                <p><strong>Your Small Desk · Desarrollado por Diego Herrera Ayuso.</strong></p>
+                <p><strong>Your Small Desk Â· Desarrollado por Diego Herrera Ayuso.</strong></p>
                 <p>Uso gratuito permitido para autonomos, pequenos negocios, microempresas, uso personal, uso educativo y uso interno no masivo.</p>
                 <p>No esta permitido sin autorizacion escrita del autor: uso por empresas medianas o grandes, facturacion anual superior a 100.000 EUR, reventa, redistribucion como producto propio, ofrecerlo como SaaS o servicio alojado a terceros, integrarlo en productos comerciales de terceros o eliminar avisos de autoria.</p>
                 <p>Si superas estos limites o quieres usar Your Small Desk en una empresa mayor, contacta con Diego Herrera Ayuso para obtener una licencia comercial.</p>

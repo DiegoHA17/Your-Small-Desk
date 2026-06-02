@@ -10,7 +10,7 @@ function obtenerConfiguracionMailrelaySmtp(): array
         'mailrelay_smtp_port' => (int) ($configuracion['mailrelay_smtp_port'] ?? 0),
         'mailrelay_smtp_usuario' => trim((string) ($configuracion['mailrelay_smtp_usuario'] ?? '')),
         'mailrelay_smtp_password' => (string) ($configuracion['mailrelay_smtp_password'] ?? ''),
-        'mailrelay_smtp_seguridad' => trim((string) ($configuracion['mailrelay_smtp_seguridad'] ?? 'tls')),
+        'mailrelay_smtp_seguridad' => strtolower(trim((string) ($configuracion['mailrelay_smtp_seguridad'] ?? 'tls'))),
         'mailrelay_from_email' => trim((string) ($configuracion['mailrelay_from_email'] ?? '')),
         'mailrelay_from_name' => trim((string) ($configuracion['mailrelay_from_name'] ?? '')),
         'mailrelay_bcc_email' => trim((string) ($configuracion['mailrelay_bcc_email'] ?? '')),
@@ -124,9 +124,9 @@ function validarConfiguracionMailrelaySmtp(array $configuracion, string $destina
         return errorMailrelaySmtp('Falta el usuario SMTP de Mailrelay.');
     }
     if ($configuracion['mailrelay_smtp_password'] === '') {
-        return errorMailrelaySmtp('Falta la contraseña SMTP de Mailrelay.');
+        return errorMailrelaySmtp('Falta la contrasena SMTP de Mailrelay.');
     }
-    if (!in_array($configuracion['mailrelay_smtp_seguridad'], ['tls', 'ssl', 'ninguna'], true)) {
+    if (!in_array($configuracion['mailrelay_smtp_seguridad'], ['tls', 'ssl', 'none', 'ninguna'], true)) {
         return errorMailrelaySmtp('La seguridad SMTP seleccionada no es valida.');
     }
     if (!filter_var($configuracion['mailrelay_from_email'], FILTER_VALIDATE_EMAIL)) {

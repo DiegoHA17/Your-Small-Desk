@@ -7,6 +7,7 @@ ALTER TABLE configuracion
   ADD COLUMN IF NOT EXISTS mailrelay_from_name VARCHAR(150) NULL AFTER mailrelay_from_email,
   ADD COLUMN IF NOT EXISTS mailrelay_bcc_email VARCHAR(150) NULL AFTER mailrelay_from_name,
   ADD COLUMN IF NOT EXISTS mailrelay_bcc_activo TINYINT(1) NOT NULL DEFAULT 0 AFTER mailrelay_bcc_email,
+  ADD COLUMN IF NOT EXISTS mailrelay_metodo_envio VARCHAR(10) NOT NULL DEFAULT 'api' AFTER mailrelay_bcc_activo,
   ADD COLUMN IF NOT EXISTS mailrelay_metodo_envio_facturas VARCHAR(10) NOT NULL DEFAULT 'smtp' AFTER mailrelay_bcc_activo,
   ADD COLUMN IF NOT EXISTS mailrelay_smtp_fallback_activo TINYINT(1) NOT NULL DEFAULT 1 AFTER mailrelay_metodo_envio_facturas,
   ADD COLUMN IF NOT EXISTS mailrelay_smtp_host VARCHAR(255) NULL AFTER mailrelay_smtp_fallback_activo,

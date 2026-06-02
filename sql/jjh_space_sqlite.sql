@@ -49,6 +49,7 @@ CREATE TABLE IF NOT EXISTS configuracion (
   mailrelay_from_name TEXT DEFAULT NULL,
   mailrelay_bcc_email TEXT DEFAULT NULL,
   mailrelay_bcc_activo INTEGER NOT NULL DEFAULT 0,
+  mailrelay_metodo_envio TEXT NOT NULL DEFAULT 'api',
   mailrelay_metodo_envio_facturas TEXT NOT NULL DEFAULT 'api',
   mailrelay_smtp_fallback_activo INTEGER NOT NULL DEFAULT 0,
   mailrelay_smtp_host TEXT DEFAULT NULL,
