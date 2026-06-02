@@ -65,7 +65,7 @@ Publicacion:
 - No mostrar claves completas en interfaz ni JSON.
 - API por HTTPS.
 - SMTP solo si el servidor permite salida SMTP.
-- No confundir SMTP con SSH.
+- Usar SMTP solo para correo saliente.
 
 ## Electron
 

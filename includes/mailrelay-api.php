@@ -260,7 +260,7 @@ function ejecutarPeticionMailrelay(array $payload): array
     }
 
     $ch = curl_init();
-    curl_setopt_array($ch, [
+    $opcionesCurl = [
         CURLOPT_URL => $apiUrl,
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_ENCODING => '',
@@ -274,7 +274,14 @@ function ejecutarPeticionMailrelay(array $payload): array
         ],
         CURLOPT_POSTFIELDS => $jsonPayload,
         CURLOPT_TIMEOUT => 30,
-    ]);
+        CURLOPT_SSL_VERIFYPEER => true,
+        CURLOPT_SSL_VERIFYHOST => 2,
+    ];
+    $archivoCa = (string) ini_get('curl.cainfo');
+    if ($archivoCa !== '' && is_file($archivoCa)) {
+        $opcionesCurl[CURLOPT_CAINFO] = $archivoCa;
+    }
+    curl_setopt_array($ch, $opcionesCurl);
 
     $respuestaRaw = curl_exec($ch);
     $errorCurl = curl_error($ch);
@@ -286,8 +293,13 @@ function ejecutarPeticionMailrelay(array $payload): array
     $respuestaJson = json_decode($respuestaRaw, true);
     $ok = $errorCurl === '' && $httpCode >= 200 && $httpCode < 300;
     $respuestaMinuscula = strtolower($respuestaRaw);
+    $errorCurlMinuscula = strtolower($errorCurl);
     $cuentaEnRevision = str_contains($respuestaMinuscula, 'account is currently under review')
         || str_contains($respuestaMinuscula, 'account under review');
+    $errorCertificadoSsl = $httpCode === 0
+        && (str_contains($errorCurlMinuscula, 'unable to get local issuer certificate')
+            || str_contains($errorCurlMinuscula, 'certificate')
+            || str_contains($errorCurlMinuscula, 'ssl certificate'));
 
     $datos = [
         'http_code' => $httpCode,
@@ -324,11 +336,15 @@ function ejecutarPeticionMailrelay(array $payload): array
         }
         $datos['json_payload'] = $payloadDepurado;
     } else {
-        $datos['error'] = $ok ? null : 'Mailrelay ha rechazado o no ha procesado el envio.';
+        $datos['error'] = $ok ? null : ($httpCode === 0 ? 'No se pudo conectar con Mailrelay.' : 'Mailrelay ha rechazado o no ha procesado el envio.');
     }
 
     $mensaje = 'Correo enviado correctamente.';
-    if ($errorCurl !== '') {
+    if ($errorCertificadoSsl) {
+        $mensaje = 'No se pudo verificar el certificado SSL. Falta o esta mal configurado cacert.pem en PHP portable.';
+        $datos['error'] = $mensaje;
+        $datos['cacert_configurado'] = $archivoCa !== '' && is_file($archivoCa);
+    } elseif ($errorCurl !== '') {
         $mensaje = 'Error cURL al conectar con Mailrelay.';
     } elseif ($cuentaEnRevision) {
         $mensaje = 'La cuenta de Mailrelay esta en revision. La API HTTPS conecta, pero Mailrelay todavia no permite enviar.';

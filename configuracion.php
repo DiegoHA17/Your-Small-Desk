@@ -521,7 +521,7 @@ Guarda una copia de data/jjh_space.sqlite y de la carpeta storage/. Ahi estan la
 La API usa HTTPS y suele funcionar incluso en servidores que bloquean SMTP. SMTP usa puertos de correo como 465 o 587, puede estar bloqueado por algunos proveedores y es recomendable si necesitas copia oculta real BCC y el servidor lo permite. La configuracion API y SMTP se guarda por separado. Guardar API no borra SMTP y guardar SMTP no borra API.
 
 9. Servidores sin salida SMTP
-Algunos servidores bloquean puertos SMTP. En ese caso usa API. SMTP no es SSH: SSH sirve para acceso remoto y SMTP sirve para enviar correo.
+Algunos servidores bloquean puertos SMTP. En ese caso usa API. SMTP sirve para enviar correo.
 
 10. Licencia
 Your Small Desk tiene uso gratuito limitado para autonomos, pequenos negocios, uso personal y uso educativo. Grandes empresas, facturacion alta o usos comerciales ampliados requieren autorizacion del autor. No elimines la autoria de Diego Herrera Ayuso.</script>

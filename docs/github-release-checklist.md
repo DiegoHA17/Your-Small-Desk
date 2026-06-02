@@ -11,8 +11,10 @@
 - Confirmar que existe `desktop/php/php.exe`.
 - Confirmar que existe `desktop/php/php.ini`.
 - Confirmar que existe `desktop/php/ext/`.
-- Activar en `php.ini` las extensiones `pdo_sqlite`, `sqlite3`, `mbstring`, `curl`, `fileinfo`, `gd` y `zip`.
-- Ejecutar `desktop/php/php.exe -m` y comprobar que aparecen `pdo_sqlite`, `sqlite3`, `fileinfo` y `mbstring`.
+- Activar en `php.ini` las extensiones `pdo_sqlite`, `sqlite3`, `curl`, `openssl`, `mbstring`, `fileinfo`, `gd` y `zip`.
+- Confirmar que existe `desktop/php/extras/ssl/cacert.pem`.
+- Confirmar que `curl.cainfo` y `openssl.cafile` apuntan a `cacert.pem`.
+- Ejecutar `desktop/php/php.exe -m` y comprobar que aparecen `pdo_sqlite`, `sqlite3`, `curl`, `openssl`, `fileinfo`, `mbstring`, `gd` y `zip`.
 - Confirmar que `desktop/php/license.txt` existe para conservar la licencia de PHP portable.
 - Ejecutar Composer para incluir mPDF y PHPMailer en el build.
 
@@ -43,6 +45,10 @@ Comprobar que el build incluye PHP portable:
 ```powershell
 Test-Path .\dist\win-unpacked\resources\php\php.exe
 Test-Path .\dist\win-unpacked\resources\php\license.txt
+Test-Path .\dist\win-unpacked\resources\php\extras\ssl\cacert.pem
+Test-Path .\dist\win-unpacked\resources\jjh-space\vendor\autoload.php
+Test-Path .\dist\win-unpacked\resources\jjh-space\vendor\phpmailer\phpmailer
+Test-Path .\dist\win-unpacked\resources\jjh-space\vendor\mpdf\mpdf
 ```
 
 ## Subir codigo

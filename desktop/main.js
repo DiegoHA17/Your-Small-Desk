@@ -9,7 +9,7 @@ const HOST = '127.0.0.1';
 const PORT_MIN = 8765;
 const PORT_MAX = 8775;
 const APP_NAME = 'Your Small Desk';
-const REQUIRED_PHP_EXTENSIONS = ['pdo_sqlite', 'sqlite3', 'fileinfo', 'mbstring'];
+const REQUIRED_PHP_EXTENSIONS = ['pdo_sqlite', 'sqlite3', 'curl', 'openssl', 'mbstring', 'fileinfo', 'gd', 'zip'];
 
 let phpProcess = null;
 let mainWindow = null;
@@ -112,6 +112,43 @@ async function findPhp() {
   return null;
 }
 
+function isPortablePhpPath(phpPath) {
+  return path.basename(phpPath).toLowerCase() === 'php.exe' && fs.existsSync(path.join(path.dirname(phpPath), 'php.ini'));
+}
+
+function configurePortablePhp(phpPath) {
+  if (!isPortablePhpPath(phpPath)) {
+    return null;
+  }
+
+  const phpDir = path.dirname(phpPath);
+  const phpIni = path.join(phpDir, 'php.ini');
+  const cacertPath = path.join(phpDir, 'extras', 'ssl', 'cacert.pem');
+
+  if (!fs.existsSync(cacertPath)) {
+    return 'Falta el archivo de certificados SSL cacert.pem. Colocalo en desktop/php/extras/ssl/cacert.pem.';
+  }
+
+  let ini = fs.readFileSync(phpIni, 'utf8');
+  const normalizedCacert = cacertPath.replace(/\\/g, '/');
+  const replacements = [
+    [/^;?extension=openssl\s*$/mi, 'extension=openssl'],
+    [/^;?curl\.cainfo\s*=.*$/mi, `curl.cainfo = "${normalizedCacert}"`],
+    [/^;?openssl\.cafile\s*=.*$/mi, `openssl.cafile="${normalizedCacert}"`]
+  ];
+
+  for (const [pattern, replacement] of replacements) {
+    if (pattern.test(ini)) {
+      ini = ini.replace(pattern, replacement);
+    } else {
+      ini += `\n${replacement}`;
+    }
+  }
+
+  fs.writeFileSync(phpIni, ini, 'utf8');
+  return null;
+}
+
 async function findMissingPhpExtensions(phpPath) {
   const result = await runPhpCommand(phpPath, ['-m']);
 
@@ -156,6 +193,7 @@ function startPhpServer(phpPath, port, projectRoot) {
       : 'data/jjh_space.sqlite'
   );
 
+  const cacertPath = path.join(path.dirname(phpPath), 'extras', 'ssl', 'cacert.pem');
   const env = {
     ...process.env,
     APP_ENV: process.env.APP_ENV || 'desktop',
@@ -164,7 +202,9 @@ function startPhpServer(phpPath, port, projectRoot) {
     DB_DRIVER: process.env.DB_DRIVER || 'sqlite',
     SQLITE_PATH: sqlitePath,
     DB_CHARSET: process.env.DB_CHARSET || 'utf8mb4',
-    SESSION_SECURE: 'false'
+    SESSION_SECURE: 'false',
+    CURL_CA_BUNDLE: fs.existsSync(cacertPath) ? cacertPath : (process.env.CURL_CA_BUNDLE || ''),
+    SSL_CERT_FILE: fs.existsSync(cacertPath) ? cacertPath : (process.env.SSL_CERT_FILE || '')
   };
 
   phpProcess = spawn(phpPath, ['-S', `${HOST}:${port}`, '-t', projectRoot], {
@@ -302,6 +342,13 @@ async function boot() {
       'No se encontro PHP',
       'No se encontro PHP. Anade PHP portable en desktop/php/php.exe antes de compilar o instala PHP y anadelo al PATH.'
     );
+    app.quit();
+    return;
+  }
+
+  const phpConfigError = configurePortablePhp(phpPath);
+  if (phpConfigError) {
+    dialog.showErrorBox('PHP portable incompleto', phpConfigError);
     app.quit();
     return;
   }

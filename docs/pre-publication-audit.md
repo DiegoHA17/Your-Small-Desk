@@ -1,6 +1,55 @@
-# Auditoria prepublicacion
+﻿# Auditoria prepublicacion
 
 Fecha: 2026-06-02
+
+## Cierre final de release
+
+Resultado general: Your Small Desk queda preparado para publicar como app local de escritorio. Se corrigieron problemas de PHP portable, SSL/cacert, Composer/vendor, separacion API/SMTP y build Electron.
+
+Comandos ejecutados:
+
+- `desktop/php/php.exe -v`
+- `desktop/php/php.exe -m`
+- `desktop/php/php.exe -r "echo ini_get('curl.cainfo')..."`
+- `composer validate --no-check-publish`
+- `composer install --no-dev --optimize-autoloader`
+- `php -l` en PHP principales modificados
+- `node --check assets/js/app.js`
+- `node --check desktop/main.js`
+- `npm install`
+- `npm run dist`
+
+Resultados:
+
+- PHP portable arranca correctamente.
+- Extensiones verificadas: `pdo_sqlite`, `sqlite3`, `curl`, `openssl`, `mbstring`, `fileinfo`, `gd`, `zip`.
+- `desktop/php/extras/ssl/cacert.pem` existe.
+- `curl.cainfo` y `openssl.cafile` apuntan a `cacert.pem` en desarrollo.
+- Electron reconfigura `php.ini` al arrancar para apuntar a la ruta real de `cacert.pem` en la app instalada.
+- Composer valida correctamente.
+- `vendor/autoload.php`, `vendor/phpmailer/phpmailer` y `vendor/mpdf/mpdf` existen tras Composer.
+- `npm install` termina sin vulnerabilidades reportadas.
+- `npm run dist` termina correctamente.
+
+Instaladores generados:
+
+- `desktop/dist/Your-Small-Desk-Setup-0.1.0.exe`
+- `desktop/dist/Your-Small-Desk-Portable-0.1.0.exe`
+
+El paquete `win-unpacked` incluye:
+
+- `resources/php/php.exe`
+- `resources/php/extras/ssl/cacert.pem`
+- `resources/php/license.txt`
+- `resources/jjh-space/vendor/autoload.php`
+- `resources/jjh-space/vendor/phpmailer/phpmailer`
+- `resources/jjh-space/vendor/mpdf/mpdf`
+
+Prueba local HTTP con SQLite temporal:
+
+- PHP embebido arranco con `DB_DRIVER=sqlite`.
+- La app creo una base SQLite temporal.
+- La primera carga devolvio `302` a `setup.php`, comportamiento esperado en instalacion limpia.
 
 ## Cambio de nombre
 
@@ -21,7 +70,7 @@ Autor correcto:
 
 Copyright visible requerido:
 
-- `Your Small Desk · Desarrollado por Diego Herrera Ayuso`
+- `Your Small Desk Â· Desarrollado por Diego Herrera Ayuso`
 
 Resultado: no se han detectado referencias al nombre de autor incorrecto en archivos publicables.
 
@@ -61,7 +110,7 @@ Resultado: README principal, manual principal, configuracion e interfaz no prese
 
 Las notas antiguas de despliegue en servidor externo se han separado en `docs/legacy/`.
 
-Resultado SMTP/SSH: la documentacion principal explica que SMTP es correo y SSH es acceso remoto. No se usa SSH como metodo de envio.
+Resultado SMTP: la documentacion principal usa SMTP para correo saliente y no lo mezcla con otros protocolos.
 
 ## Licencia
 
@@ -238,3 +287,4 @@ El build actual incluye PHP portable y sus extensiones criticas. Los instaladore
 - Enlace de descarga del README configurado hacia `DiegoHA17/Your-Small-Desk`.
 - Anadir capturas reales sin datos privados en `docs/screenshots/`.
 - Revisar el contenido final de la Release antes de publicarla.
+

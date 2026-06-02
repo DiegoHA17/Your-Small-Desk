@@ -119,8 +119,6 @@ SMTP:
 
 Si tu servidor bloquea SMTP, usa API. Si necesitas copia oculta real y el servidor permite SMTP, usa SMTP.
 
-No confundas SMTP con SSH: SSH es acceso remoto, SMTP es envio de correo.
-
 Si dejas vacia la API key al guardar la configuracion API, la clave anterior se conserva. Si dejas vacia la contrasena SMTP al guardar la configuracion SMTP, la contrasena anterior se conserva.
 
 ## Copias de seguridad

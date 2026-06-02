@@ -33,6 +33,7 @@ extension=pdo_sqlite
 extension=sqlite3
 extension=mbstring
 extension=curl
+extension=openssl
 extension=fileinfo
 extension=gd
 extension=zip
@@ -41,8 +42,24 @@ Extensiones criticas que Your Small Desk comprueba al arrancar:
 
 - pdo_sqlite
 - sqlite3
+- curl
+- openssl
 - fileinfo
 - mbstring
+- gd
+- zip
+
+Mailrelay API necesita certificados SSL validos.
+
+Debe existir:
+
+desktop/php/extras/ssl/cacert.pem
+
+Descargalo desde:
+
+https://curl.se/ca/cacert.pem
+
+Your Small Desk reconfigura php.ini al arrancar para apuntar curl.cainfo y openssl.cafile a ese archivo.
 
 Orden de busqueda usado por Your Small Desk Desktop:
 

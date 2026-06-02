@@ -121,8 +121,6 @@ Algunos proveedores bloquean los puertos SMTP salientes.
 En ese caso:
 
 - prueba primero API;
-- no confundas SMTP con SSH;
-- SSH sirve para acceso remoto;
 - SMTP sirve para enviar correo.
 
 ## 10. Licencia
