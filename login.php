@@ -1,6 +1,11 @@
 <?php
 require_once __DIR__ . '/includes/seguridad.php';
 
+if (!setupCompletado()) {
+    header('Location: setup.php');
+    exit;
+}
+
 if (!empty($_SESSION['id_usuario'])) {
     header('Location: inicio.php');
     exit;
@@ -13,17 +18,17 @@ $imagenSocial = $appUrlPublica !== '' ? $appUrlPublica . '/assets/img/og-image.p
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Entrar | JJH Space</title>
+    <title>Entrar | Your Small Desk</title>
     <meta name="theme-color" content="#174D2A">
-    <meta name="application-name" content="JJH Space">
-    <meta name="apple-mobile-web-app-title" content="JJH Space">
-    <meta property="og:title" content="JJH Space">
-    <meta property="og:description" content="Gestión de presupuestos de Podas y Talas JJH">
+    <meta name="application-name" content="Your Small Desk">
+    <meta name="apple-mobile-web-app-title" content="Your Small Desk">
+    <meta property="og:title" content="Your Small Desk">
+    <meta property="og:description" content="Gestion de presupuestos">
     <meta property="og:type" content="website">
     <meta property="og:image" content="<?php echo htmlspecialchars($imagenSocial, ENT_QUOTES, 'UTF-8'); ?>">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="JJH Space">
-    <meta name="twitter:description" content="Gestión de presupuestos de Podas y Talas JJH">
+    <meta name="twitter:title" content="Your Small Desk">
+    <meta name="twitter:description" content="Gestion de presupuestos">
     <meta name="twitter:image" content="<?php echo htmlspecialchars($imagenSocial, ENT_QUOTES, 'UTF-8'); ?>">
     <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="assets/img/favicon-16x16.png">
@@ -38,9 +43,9 @@ $imagenSocial = $appUrlPublica !== '' ? $appUrlPublica . '/assets/img/og-image.p
     <div class="card card-soft login-card">
         <div class="card-body p-4">
             <div class="text-center mb-4">
-                <img src="assets/img/logo-jjh.png" alt="Podas y Talas JJH" class="login-logo mb-3">
-                <h1 class="h4 mb-1">JJH Space</h1>
-                <div class="text-muted">Podas y Talas JJH</div>
+                <img src="assets/img/logo-jjh.png" alt="Your Small Desk" class="login-logo mb-3">
+                <h1 class="h4 mb-1">Your Small Desk</h1>
+                <div class="text-muted">Gestion local de presupuestos para pequenas empresas.</div>
             </div>
             <form id="formLogin">
                 <input type="hidden" name="accion" value="login">
@@ -60,6 +65,7 @@ $imagenSocial = $appUrlPublica !== '' ? $appUrlPublica . '/assets/img/og-image.p
             </form>
         </div>
     </div>
+    <div class="login-copy">Your Small Desk &middot; Desarrollado por Diego Herrera Ayuso</div>
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script>

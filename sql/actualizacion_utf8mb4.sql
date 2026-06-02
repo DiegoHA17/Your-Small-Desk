@@ -1,7 +1,3 @@
--- Ejecutar sobre la base seleccionada.
--- Local: selecciona jjh_space. Railway: selecciona railway.
--- Esta migracion asegura el juego de caracteres; no corrige textos que ya se hayan guardado corruptos.
-
 SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 ALTER DATABASE CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

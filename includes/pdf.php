@@ -75,10 +75,6 @@ function escribirHtmlMpdf(\Mpdf\Mpdf $mpdf, string $html): void
         return;
     }
 
-    /*
-     * Una factura larga se parte solo despues de filas completas.
-     * El delimitador se conserva para no enviar etiquetas rotas a mPDF.
-     */
     $partes = preg_split('/(<\/tr>)/i', $html, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
     if ($partes === false || count($partes) <= 1) {
         $mpdf->WriteHTML($html, \Mpdf\HTMLParserMode::HTML_BODY);
@@ -150,7 +146,7 @@ function generarPdfFactura(int $idFactura): array
     ]);
 
     $mpdf->SetTitle("Presupuesto N\u{00BA} " . (int) $factura['codigo_factura']);
-    $mpdf->SetAuthor($datos['configuracion']['nombre_empresa'] ?: 'Podas y Talas JJH');
+    $mpdf->SetAuthor($datos['configuracion']['nombre_comercial'] ?: ($datos['configuracion']['nombre_empresa'] ?: 'Your Small Desk'));
     $mpdf->showImageErrors = false;
 
     if ($css !== '') {

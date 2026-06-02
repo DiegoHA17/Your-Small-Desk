@@ -73,7 +73,7 @@ function probarConexionSmtp(string $host, int $puerto, int $timeout = 5): array
         fclose($conexion);
         return [
             'ok' => true,
-            'mensaje' => 'SMTP parece accesible desde este entorno. Si la prueba se ejecuta en Railway, puedes probar el envio SMTP con PHPMailer.',
+            'mensaje' => 'SMTP parece accesible desde este entorno. Puedes probar el envio SMTP con PHPMailer.',
             'datos' => [
                 'reachable' => true,
                 'host' => $host,
@@ -84,7 +84,7 @@ function probarConexionSmtp(string $host, int $puerto, int $timeout = 5): array
     }
 
     return errorMailrelaySmtp(
-        'SMTP no es accesible desde este servicio. En Railway Free, Trial y Hobby es normal porque SMTP saliente esta bloqueado.',
+        'SMTP no es accesible desde este servicio. Algunos proveedores bloquean la salida SMTP.',
         [
             'reachable' => false,
             'host' => $host,
@@ -131,9 +131,6 @@ function validarConfiguracionMailrelaySmtp(array $configuracion, string $destina
     }
     if (!filter_var($configuracion['mailrelay_from_email'], FILTER_VALIDATE_EMAIL)) {
         return errorMailrelaySmtp('El email remitente de Mailrelay no es valido.');
-    }
-    if (!str_ends_with(strtolower($configuracion['mailrelay_from_email']), '@podasytalasjjh.es')) {
-        return errorMailrelaySmtp('El email remitente debe pertenecer al dominio autenticado @podasytalasjjh.es.');
     }
     if ($configuracion['mailrelay_from_name'] === '') {
         return errorMailrelaySmtp('Falta el nombre remitente de Mailrelay.');

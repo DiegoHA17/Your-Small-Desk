@@ -32,13 +32,13 @@ $(function () {
         let clase = 'alert-secondary';
 
         if (resultadoApi && resultadoApi.datos && resultadoApi.datos.cuenta_en_revision) {
-            texto = 'Contacta con Mailrelay para que apruebe la cuenta. Railway no bloquea la API HTTPS.';
+            texto = 'Contacta con Mailrelay para que apruebe la cuenta. La API HTTPS conecta, pero Mailrelay todavia no permite enviar.';
             clase = 'alert-warning';
         } else if (resultadoApi && resultadoApi.ok && resultadoSmtpPuerto && !resultadoSmtpPuerto.ok) {
-            texto = 'Usa Mailrelay API en Railway. SMTP esta bloqueado o no disponible desde este servicio.';
+            texto = 'Usa Mailrelay API. SMTP esta bloqueado o no disponible desde este servicio.';
             clase = 'alert-success';
         } else if (resultadoApi && resultadoApi.ok && resultadoSmtpPuerto && resultadoSmtpPuerto.ok) {
-            texto = 'La API funciona y SMTP es accesible. En Railway se recomienda API; usa SMTP solo si necesitas sus capacidades confirmadas.';
+            texto = 'La API funciona y SMTP es accesible. Usa API si quieres evitar bloqueos SMTP; usa SMTP solo si necesitas sus capacidades confirmadas.';
             clase = 'alert-success';
         } else if (resultadoApi && !resultadoApi.ok && resultadoSmtpPuerto && !resultadoSmtpPuerto.ok) {
             texto = 'Revisa la configuracion o respuesta de Mailrelay API. SMTP no es una alternativa disponible desde este servicio.';
@@ -47,7 +47,7 @@ $(function () {
             texto = 'Revisa MAILRELAY API: URL, clave guardada, remitente y respuesta devuelta por Mailrelay.';
             clase = 'alert-warning';
         } else if (resultadoSmtpPuerto && !resultadoSmtpPuerto.ok) {
-            texto = 'Railway probablemente bloquea SMTP en tu plan. Usa Mailrelay API por HTTPS o un plan con SMTP habilitado.';
+            texto = 'El servidor probablemente bloquea SMTP. Usa Mailrelay API por HTTPS o un entorno con SMTP habilitado.';
             clase = 'alert-warning';
         }
 
@@ -88,8 +88,8 @@ $(function () {
             accion: 'probar_mailrelay_simple',
             csrf_token: window.JJH_CSRF || '',
             destinatario: destinatario,
-            asunto: 'Prueba Mailrelay API - JJH Space',
-            mensaje: 'Prueba de envio por API desde JJH Space en Railway.'
+            asunto: 'Prueba Mailrelay API - Your Small Desk',
+            mensaje: 'Prueba de envio por API desde Your Small Desk.'
         }, function (res) {
             resultadoApi = res;
             mostrarToast(res.mensaje, res.ok);
@@ -137,8 +137,8 @@ $(function () {
             accion: 'probar_mailrelay_smtp_simple',
             csrf_token: window.JJH_CSRF || '',
             destinatario: destinatario,
-            asunto: 'Prueba SMTP JJH Space',
-            mensaje: 'Prueba de envio SMTP desde JJH Space en Railway.'
+            asunto: 'Prueba SMTP Your Small Desk',
+            mensaje: 'Prueba de envio SMTP desde Your Small Desk.'
         }, function (res) {
             mostrarToast(res.mensaje, res.ok);
             escribirResultado('Prueba de envio SMTP', res);

@@ -1,10 +1,15 @@
 <?php
-$logoPath = realpath(__DIR__ . '/../assets/img/logo-presupuesto-jjh.png');
-$logoSrc = ($logoPath && is_file($logoPath)) ? $logoPath : '';
+$logoRelativo = trim((string) ($configuracionPdf['logo_documento'] ?? ''));
+$logoPath = $logoRelativo !== '' ? realpath(__DIR__ . '/../' . ltrim($logoRelativo, '/\\')) : false;
+$logosDir = realpath(__DIR__ . '/../storage/logos');
+$logoSrc = ($logoPath && $logosDir && is_file($logoPath) && str_starts_with($logoPath, $logosDir . DIRECTORY_SEPARATOR)) ? $logoPath : '';
+$nombreComercialPdf = trim((string) ($configuracionPdf['nombre_comercial'] ?: ($configuracionPdf['nombre_empresa'] ?? '')));
+$nombreComercialPdf = $nombreComercialPdf !== '' ? $nombreComercialPdf : 'Your Small Desk';
+$nombreFiscalPdf = trim((string) ($configuracionPdf['nombre_fiscal'] ?? ''));
 $empresaEmail = trim((string) ($configuracionPdf['email_empresa'] ?: ($configuracionPdf['mailrelay_from_email'] ?? '')));
 $empresaTelefono = trim((string) ($configuracionPdf['telefono_empresa'] ?? ''));
 $empresaContacto = implode(' · ', array_filter([$empresaEmail, $empresaTelefono], static fn ($dato) => $dato !== ''));
-$empresaDireccion = trim(($configuracionPdf['direccion_empresa'] ?? '') . ' ' . ($configuracionPdf['codigo_postal_empresa'] ?? '') . ' ' . ($configuracionPdf['ciudad_empresa'] ?? '') . ' ' . ($configuracionPdf['provincia_empresa'] ?? ''));
+$empresaDireccion = trim(($configuracionPdf['direccion_empresa'] ?? '') . ' ' . ($configuracionPdf['codigo_postal_empresa'] ?? '') . ' ' . ($configuracionPdf['ciudad_empresa'] ?? '') . ' ' . ($configuracionPdf['provincia_empresa'] ?? '') . ' ' . ($configuracionPdf['pais_empresa'] ?? ''));
 $ivaPorcentajePdf = max(0, (float) ($facturaPdf['iva_porcentaje'] ?? 0));
 $aplicaIva = $ivaPorcentajePdf > 0;
 $fechaEmision = !empty($facturaPdf['fecha_emision']) ? date('d/m/Y', strtotime($facturaPdf['fecha_emision'])) : '';
@@ -60,8 +65,10 @@ $fechaEmision = !empty($facturaPdf['fecha_emision']) ? date('d/m/Y', strtotime($
         <table class="header">
             <tr>
                 <td class="company-cell">
-                    <?php if ($logoSrc): ?><img src="<?php echo htmlspecialchars($logoSrc, ENT_QUOTES, 'UTF-8'); ?>" class="logo" alt="Podas y Talas JJH"><?php endif; ?>
+                    <?php if ($logoSrc): ?><img src="<?php echo htmlspecialchars($logoSrc, ENT_QUOTES, 'UTF-8'); ?>" class="logo" alt="<?php echo htmlspecialchars($nombreComercialPdf, ENT_QUOTES, 'UTF-8'); ?>"><?php endif; ?>
+                    <div style="color:#174D2A;font-weight:bold;font-size:14px;margin-top:<?php echo $logoSrc ? '3mm' : '0'; ?>;"><?php echo htmlspecialchars($nombreComercialPdf, ENT_QUOTES, 'UTF-8'); ?></div>
                     <div class="company-data">
+                        <?php if ($nombreFiscalPdf !== ''): ?><div><?php echo htmlspecialchars($nombreFiscalPdf, ENT_QUOTES, 'UTF-8'); ?></div><?php endif; ?>
                         <?php if ($empresaContacto !== ''): ?><div><?php echo htmlspecialchars($empresaContacto, ENT_QUOTES, 'UTF-8'); ?></div><?php endif; ?>
                         <?php if (!empty($configuracionPdf['nif_cif_empresa'])): ?><div><span class="company-data-label">NIF/CIF:</span> <?php echo htmlspecialchars($configuracionPdf['nif_cif_empresa'], ENT_QUOTES, 'UTF-8'); ?></div><?php endif; ?>
                         <?php if ($empresaDireccion !== ''): ?><div><?php echo htmlspecialchars($empresaDireccion, ENT_QUOTES, 'UTF-8'); ?></div><?php endif; ?>

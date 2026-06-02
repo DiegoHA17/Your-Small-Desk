@@ -67,7 +67,7 @@ function longitudTextoFactura(string $texto): int
     return function_exists('mb_strlen') ? mb_strlen($texto, 'UTF-8') : strlen($texto);
 }
 
-function existeFactura(mysqli $conexion, int $idFactura): bool
+function existeFactura($conexion, int $idFactura): bool
 {
     $stmt = $conexion->prepare('SELECT 1 FROM facturas WHERE id_factura = ?');
     $stmt->bind_param('i', $idFactura);
@@ -322,7 +322,9 @@ if ($accion === 'preparar_whatsapp') {
         $pdf = generarPdfFactura($idFactura);
         $datos = obtenerDatosFactura($idFactura);
         $codigoFactura = (int) $datos['factura']['codigo_factura'];
-        $mensaje = "Hola, te env\u{00ED}o el presupuesto N\u{00BA} " . $codigoFactura . ' de Podas y Talas JJH.';
+        $configuracionWhatsapp = obtenerConfiguracion();
+        $nombreEmpresaWhatsapp = trim((string) ($configuracionWhatsapp['nombre_comercial'] ?: ($configuracionWhatsapp['nombre_empresa'] ?? ''))) ?: 'Your Small Desk';
+        $mensaje = "Hola, te env\u{00ED}o el presupuesto N\u{00BA} " . $codigoFactura . ' de ' . $nombreEmpresaWhatsapp . '.';
         responderJson(true, 'WhatsApp preparado. Se ha generado el PDF actualizado.', [
             'id_factura' => $idFactura,
             'codigo_factura' => $codigoFactura,
@@ -430,11 +432,6 @@ if (in_array($accion, ['eliminar', 'eliminar_factura'], true)) {
 
     $conexion->begin_transaction();
     try {
-        /*
-         * La tabla envios no tiene ON DELETE CASCADE, así que hay que borrar primero
-         * los registros dependientes. Las líneas sí tienen cascade, pero las eliminamos
-         * igualmente para que el comportamiento sea explícito.
-         */
         $stmtEnvios = $conexion->prepare('DELETE FROM envios WHERE id_factura = ?');
         $stmtEnvios->bind_param('i', $idFactura);
         $stmtEnvios->execute();

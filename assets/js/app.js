@@ -22,15 +22,28 @@ $(function () {
         const passwordSmtpInformada = ($form.find('[name="mailrelay_smtp_password"]').val() || '').trim() !== '';
         $boton.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Guardando...');
 
-        $.post('configuracion.php', $form.serialize(), function (res) {
+        $.ajax({
+            url: 'configuracion.php',
+            method: 'POST',
+            data: new FormData(this),
+            processData: false,
+            contentType: false,
+            dataType: 'json'
+        }).done(function (res) {
             mostrarToast(res.mensaje, res.ok);
             if (res.ok) {
                 $form.find('[name="mailrelay_api_key"]').val('').attr('placeholder', 'Clave configurada');
                 if (passwordSmtpInformada) {
                     $form.find('[name="mailrelay_smtp_password"]').val('').attr('placeholder', 'Contrasena configurada');
                 }
+                if (res.datos && res.datos.logo_documento_url) {
+                    $('#logoDocumentoActual').attr('src', res.datos.logo_documento_url).removeClass('d-none');
+                    $('#logoDocumentoVacio').addClass('d-none');
+                    $('[name="eliminar_logo_documento"]').prop('checked', false);
+                    $('[name="logo_documento"]').val('');
+                }
             }
-        }, 'json').fail(function () {
+        }).fail(function () {
             mostrarToast('No se pudo guardar la configuracion.', false);
         }).always(function () {
             $boton.prop('disabled', false).html('<i class="bi bi-save"></i> Guardar configuracion');
@@ -72,8 +85,8 @@ $(function () {
             accion: 'probar_mailrelay_simple',
             csrf_token: window.JJH_CSRF || '',
             destinatario: destinatario,
-            asunto: 'Prueba Mailrelay - JJH Space',
-            mensaje: 'Mensaje de prueba enviado desde JJH Space para validar la configuracion de Mailrelay.'
+            asunto: 'Prueba Mailrelay - Your Small Desk',
+            mensaje: 'Mensaje de prueba enviado desde Your Small Desk para validar la configuracion de Mailrelay.'
         }, function (res) {
             mostrarToast(res.mensaje, res.ok);
             if (res.datos && Object.keys(res.datos).length) {
@@ -106,8 +119,8 @@ $(function () {
             csrf_token: window.JJH_CSRF || '',
             destinatario: destinatario,
             variante_adjunto: variante,
-            asunto: 'Prueba de adjunto TXT - JJH Space',
-            mensaje: 'Prueba de adjunto desde JJH Space.'
+            asunto: 'Prueba de adjunto TXT - Your Small Desk',
+            mensaje: 'Prueba de adjunto desde Your Small Desk.'
         }, function (res) {
             mostrarToast(res.mensaje, res.ok);
             if (res.datos && Object.keys(res.datos).length) {
@@ -138,8 +151,8 @@ $(function () {
             accion: 'probar_mailrelay_smtp_simple',
             csrf_token: window.JJH_CSRF || '',
             destinatario: destinatario,
-            asunto: 'Prueba SMTP JJH Space',
-            mensaje: 'Prueba de envio SMTP desde JJH Space.'
+            asunto: 'Prueba SMTP Your Small Desk',
+            mensaje: 'Prueba de envio SMTP desde Your Small Desk.'
         }, function (res) {
             mostrarToast(res.mensaje, res.ok);
             if (res.datos && Object.keys(res.datos).length) {
@@ -187,8 +200,9 @@ function abrirModalEnvioFactura(idFactura, destinatario, codigoFactura) {
 
         $('#envio_id_factura').val(idFactura);
         $('#envio_destinatario').val(destinatario || '');
-        $('#envio_asunto').val('Presupuesto N\u00ba ' + codigoFactura + ' - Podas y Talas JJH');
-        $('#envio_mensaje').val('Hola,\n\nTe adjunto el presupuesto solicitado.\n\nQuedo pendiente de cualquier duda.\n\nUn saludo,\nPodas y Talas JJH');
+        const empresa = window.JJH_EMPRESA_NOMBRE || 'Your Small Desk';
+        $('#envio_asunto').val('Presupuesto N\u00ba ' + codigoFactura + ' - ' + empresa);
+        $('#envio_mensaje').val('Hola,\n\nTe adjunto el presupuesto solicitado.\n\nQuedo pendiente de cualquier duda.\n\nUn saludo,\n' + empresa);
         $('#diagnosticoEnvioMailrelay').remove();
         bootstrap.Modal.getOrCreateInstance(document.getElementById('modalEnvio')).show();
     }, 'json').fail(function () {

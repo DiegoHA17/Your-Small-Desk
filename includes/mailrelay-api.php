@@ -74,9 +74,6 @@ function validarDatosEnvioMailrelay(string $destinatario, string $asunto, string
     if (!filter_var($emailRemitente, FILTER_VALIDATE_EMAIL)) {
         return errorMailrelay('El email remitente no es valido.');
     }
-    if (!str_ends_with(strtolower($emailRemitente), '@podasytalasjjh.es')) {
-        return errorMailrelay('El email remitente debe pertenecer al dominio autenticado @podasytalasjjh.es.');
-    }
     if ($nombreRemitente === '') {
         return errorMailrelay('Falta el nombre remitente de Mailrelay.');
     }
@@ -174,7 +171,6 @@ function construirPayloadMailrelay(
     }
 
     if ($rutaArchivo !== null || $contenidoAdjunto !== null) {
-        // El formato de attachments se mantiene centralizado aqui y en el constructor de sus campos.
         $payload['attachments'] = [
             $rutaArchivo !== null
                 ? construirAdjuntoMailrelay($rutaArchivo, $nombreArchivo ?: basename($rutaArchivo), $mime, $varianteAdjunto)
@@ -199,9 +195,9 @@ function construirPayloadPruebaSimpleMailrelay(string $destinatario): array
                 'email' => $destinatario,
             ],
         ],
-        'subject' => 'Prueba Mailrelay JJH Space',
-        'html_part' => '<html><body><p>Prueba de envio desde JJH Space.</p></body></html>',
-        'text_part' => 'Prueba de envio desde JJH Space.',
+        'subject' => 'Prueba Mailrelay Your Small Desk',
+        'html_part' => '<html><body><p>Prueba de envio desde Your Small Desk.</p></body></html>',
+        'text_part' => 'Prueba de envio desde Your Small Desk.',
     ];
 }
 
@@ -335,7 +331,7 @@ function ejecutarPeticionMailrelay(array $payload): array
     if ($errorCurl !== '') {
         $mensaje = 'Error cURL al conectar con Mailrelay.';
     } elseif ($cuentaEnRevision) {
-        $mensaje = 'La cuenta de Mailrelay esta en revision. Railway no es el problema. Mailrelay todavia no permite enviar.';
+        $mensaje = 'La cuenta de Mailrelay esta en revision. La API HTTPS conecta, pero Mailrelay todavia no permite enviar.';
     } elseif (!$ok) {
         $mensaje = 'Mailrelay ha rechazado el envio.';
     }
@@ -369,8 +365,8 @@ function registrarEnvioMailrelayApi(?int $idFactura, string $destinatario, strin
 
 function enviarCorreoSimpleMailrelayApi(string $destinatario, string $asunto, string $mensaje): array
 {
-    $asuntoPrueba = 'Prueba Mailrelay JJH Space';
-    $mensajePrueba = 'Prueba de envio desde JJH Space.';
+    $asuntoPrueba = 'Prueba Mailrelay Your Small Desk';
+    $mensajePrueba = 'Prueba de envio desde Your Small Desk.';
     $error = validarDatosEnvioMailrelay($destinatario, $asuntoPrueba, $mensajePrueba);
     if ($error !== null) {
         return $error;
@@ -407,7 +403,7 @@ function probarMailrelayConAdjuntoTxt(string $destinatario, string $variante = '
             'prueba.txt',
             'text/plain',
             $variante,
-            'Prueba de adjunto desde JJH Space',
+            'Prueba de adjunto desde Your Small Desk',
             true
         );
         $resultado = ejecutarPeticionMailrelay($payload);
@@ -432,7 +428,6 @@ function enviarCorreoMailrelayApi(
     }
 
     try {
-        // Para presupuestos con copia oculta real se usa SMTP; no se inventan campos BCC para la API.
         $payload = construirPayloadMailrelay($destinatario, $asunto, $mensaje, $rutaPdf, $nombrePdf, 'application/pdf');
     } catch (Throwable $e) {
         return errorMailrelay($e->getMessage());

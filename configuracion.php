@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/includes/seguridad.php';
 require_once __DIR__ . '/includes/funciones.php';
+require_once __DIR__ . '/includes/logo-documento.php';
 exigirSesion();
 
 $conexion = obtenerConexion();
@@ -17,9 +18,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $ciudadEmpresa = limpiarCadena($_POST['ciudad_empresa'] ?? '');
     $provinciaEmpresa = limpiarCadena($_POST['provincia_empresa'] ?? '');
     $codigoPostalEmpresa = limpiarCadena($_POST['codigo_postal_empresa'] ?? '');
+    $nombreComercial = limpiarCadena($_POST['nombre_comercial'] ?? $nombreEmpresa);
+    $nombreFiscal = limpiarCadena($_POST['nombre_fiscal'] ?? '');
+    $paisEmpresa = limpiarCadena($_POST['pais_empresa'] ?? '');
+    $webEmpresa = limpiarCadena($_POST['web_empresa'] ?? '');
+    $logoDocumento = (string) ($configuracionGuardada['logo_documento'] ?? '');
+    $eliminarLogoDocumento = isset($_POST['eliminar_logo_documento']);
     $mailrelayApiUrl = limpiarCadena($_POST['mailrelay_api_url'] ?? '');
     $mailrelayApiKeyNueva = trim((string) ($_POST['mailrelay_api_key'] ?? ''));
-    // TODO: En produccion, mover la API key a variables de entorno o guardarla cifrada.
     $mailrelayApiKey = $mailrelayApiKeyNueva !== ''
         ? $mailrelayApiKeyNueva
         : (string) ($configuracionGuardada['mailrelay_api_key'] ?? MAILRELAY_API_KEY_DEFAULT);
@@ -33,13 +39,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $mailrelaySmtpPort = (int) ($_POST['mailrelay_smtp_port'] ?? 587);
     $mailrelaySmtpUsuario = limpiarCadena($_POST['mailrelay_smtp_usuario'] ?? '');
     $mailrelaySmtpPasswordNueva = trim((string) ($_POST['mailrelay_smtp_password'] ?? ''));
-    // TODO: En produccion, mover la password SMTP a variables de entorno o guardarla cifrada.
     $mailrelaySmtpPassword = $mailrelaySmtpPasswordNueva !== ''
         ? $mailrelaySmtpPasswordNueva
         : (string) ($configuracionGuardada['mailrelay_smtp_password'] ?? '');
     $mailrelaySmtpSeguridad = strtolower(limpiarCadena($_POST['mailrelay_smtp_seguridad'] ?? 'tls'));
 
-    // Campos legacy mantenidos para instalaciones anteriores; el SMTP operativo usa mailrelay_smtp_*.
     $smtpHost = (string) ($configuracionGuardada['smtp_host'] ?? SMTP_HOST_DEFAULT);
     $smtpPort = (int) ($configuracionGuardada['smtp_port'] ?? SMTP_PORT_DEFAULT);
     $smtpUsuario = (string) ($configuracionGuardada['smtp_usuario'] ?? SMTP_USER_DEFAULT);
@@ -47,8 +51,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $smtpFromEmail = (string) ($configuracionGuardada['smtp_from_email'] ?? SMTP_FROM_DEFAULT);
     $smtpFromName = (string) ($configuracionGuardada['smtp_from_name'] ?? SMTP_FROM_NAME_DEFAULT);
 
+    if ($nombreEmpresa === '' && $nombreComercial !== '') {
+        $nombreEmpresa = $nombreComercial;
+    }
+    if ($nombreComercial === '') {
+        $nombreComercial = $nombreEmpresa;
+    }
     if ($nombreEmpresa === '') {
         responderJson(false, 'Indica el nombre de la empresa.');
+    }
+    if ($webEmpresa !== '' && !filter_var($webEmpresa, FILTER_VALIDATE_URL)) {
+        responderJson(false, 'Indica una web valida o deja el campo vacio.');
     }
     if ($emailEmpresa !== '' && !filter_var($emailEmpresa, FILTER_VALIDATE_EMAIL)) {
         responderJson(false, 'Indica un email de empresa valido.');
@@ -65,9 +78,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     if (!filter_var($mailrelayFromEmail, FILTER_VALIDATE_EMAIL)) {
         responderJson(false, 'Indica un email remitente valido.');
-    }
-    if (!str_ends_with(strtolower($mailrelayFromEmail), '@podasytalasjjh.es')) {
-        responderJson(false, 'El email remitente debe pertenecer al dominio autenticado @podasytalasjjh.es.');
     }
     if ($mailrelayFromName === '') {
         responderJson(false, 'Indica el nombre remitente.');
@@ -86,6 +96,78 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     try {
+        if ($eliminarLogoDocumento) {
+            eliminarLogoDocumentoSeguro($logoDocumento);
+            $logoDocumento = '';
+        }
+        $logoDocumento = guardarLogoDocumentoSubido($_FILES['logo_documento'] ?? [], $logoDocumento);
+
+        if (esSqlite()) {
+            $stmtExiste = $conexion->prepare('SELECT 1 FROM configuracion WHERE id_configuracion = 1 LIMIT 1');
+            $stmtExiste->execute();
+            $existeConfiguracion = (bool) $stmtExiste->get_result()->fetch_assoc();
+
+            $sqlConfiguracionSqlite = $existeConfiguracion
+                ? 'UPDATE configuracion SET
+                    nombre_empresa = ?, email_empresa = ?, telefono_empresa = ?, direccion_empresa = ?, nif_cif_empresa = ?,
+                    ciudad_empresa = ?, provincia_empresa = ?, codigo_postal_empresa = ?,
+                    mailrelay_api_url = ?, mailrelay_api_key = ?, mailrelay_from_email = ?, mailrelay_from_name = ?,
+                    mailrelay_bcc_email = ?, mailrelay_bcc_activo = ?,
+                    mailrelay_metodo_envio_facturas = ?, mailrelay_smtp_fallback_activo = ?,
+                    mailrelay_smtp_host = ?, mailrelay_smtp_port = ?, mailrelay_smtp_usuario = ?, mailrelay_smtp_password = ?, mailrelay_smtp_seguridad = ?,
+                    smtp_host = ?, smtp_port = ?, smtp_usuario = ?, smtp_password = ?, smtp_from_email = ?, smtp_from_name = ?
+                   WHERE id_configuracion = 1'
+                : 'INSERT INTO configuracion
+                   (id_configuracion, nombre_empresa, email_empresa, telefono_empresa, direccion_empresa, nif_cif_empresa,
+                    ciudad_empresa, provincia_empresa, codigo_postal_empresa,
+                    mailrelay_api_url, mailrelay_api_key, mailrelay_from_email, mailrelay_from_name,
+                    mailrelay_bcc_email, mailrelay_bcc_activo,
+                    mailrelay_metodo_envio_facturas, mailrelay_smtp_fallback_activo,
+                    mailrelay_smtp_host, mailrelay_smtp_port, mailrelay_smtp_usuario, mailrelay_smtp_password, mailrelay_smtp_seguridad,
+                    smtp_host, smtp_port, smtp_usuario, smtp_password, smtp_from_email, smtp_from_name)
+                   VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+
+            $stmt = $conexion->prepare($sqlConfiguracionSqlite);
+            $tiposConfiguracion = str_repeat('s', 13) . 'isisissssissss';
+            $stmt->bind_param(
+                $tiposConfiguracion,
+                $nombreEmpresa,
+                $emailEmpresa,
+                $telefonoEmpresa,
+                $direccionEmpresa,
+                $nifCifEmpresa,
+                $ciudadEmpresa,
+                $provinciaEmpresa,
+                $codigoPostalEmpresa,
+                $mailrelayApiUrl,
+                $mailrelayApiKey,
+                $mailrelayFromEmail,
+                $mailrelayFromName,
+                $mailrelayBccEmail,
+                $mailrelayBccActivo,
+                $mailrelayMetodoEnvio,
+                $mailrelaySmtpFallbackActivo,
+                $mailrelaySmtpHost,
+                $mailrelaySmtpPort,
+                $mailrelaySmtpUsuario,
+                $mailrelaySmtpPassword,
+                $mailrelaySmtpSeguridad,
+                $smtpHost,
+                $smtpPort,
+                $smtpUsuario,
+                $smtpPassword,
+                $smtpFromEmail,
+                $smtpFromName
+            );
+            $stmt->execute();
+            $stmtExtra = $conexion->prepare('UPDATE configuracion SET nombre_comercial = ?, nombre_fiscal = ?, pais_empresa = ?, web_empresa = ?, logo_documento = ? WHERE id_configuracion = 1');
+            $stmtExtra->bind_param('sssss', $nombreComercial, $nombreFiscal, $paisEmpresa, $webEmpresa, $logoDocumento);
+            $stmtExtra->execute();
+            responderJson(true, 'Configuracion guardada correctamente.', [
+                'logo_documento_url' => $logoDocumento,
+            ]);
+        }
+
         $stmt = $conexion->prepare(
             'INSERT INTO configuracion
              (id_configuracion, nombre_empresa, email_empresa, telefono_empresa, direccion_empresa, nif_cif_empresa,
@@ -157,7 +239,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $smtpFromName
         );
         $stmt->execute();
-        responderJson(true, 'Configuracion guardada correctamente.');
+        $stmtExtra = $conexion->prepare('UPDATE configuracion SET nombre_comercial = ?, nombre_fiscal = ?, pais_empresa = ?, web_empresa = ?, logo_documento = ? WHERE id_configuracion = 1');
+        $stmtExtra->bind_param('sssss', $nombreComercial, $nombreFiscal, $paisEmpresa, $webEmpresa, $logoDocumento);
+        $stmtExtra->execute();
+        responderJson(true, 'Configuracion guardada correctamente.', [
+            'logo_documento_url' => $logoDocumento,
+        ]);
     } catch (Throwable $e) {
         registrarError($e);
         responderJson(false, 'No se pudo guardar la configuracion.');
@@ -170,9 +257,10 @@ $claveRealConfigurada = !empty($configuracion['mailrelay_api_key'])
 $passwordSmtpConfigurada = !empty($configuracion['mailrelay_smtp_password']);
 $tituloPagina = 'Configuracion';
 $jsPagina = 'configuracion.js';
+$jsExtra = ['manual.js'];
 require __DIR__ . '/includes/layout-header.php';
 ?>
-<form method="post" id="formConfiguracion">
+<form method="post" id="formConfiguracion" enctype="multipart/form-data">
     <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(obtenerCsrfToken(), ENT_QUOTES, 'UTF-8'); ?>">
     <div class="card card-soft settings-panel">
         <div class="card-header bg-white border-bottom-0 pt-3 px-3">
@@ -186,6 +274,9 @@ require __DIR__ . '/includes/layout-header.php';
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="smtp-tab" data-bs-toggle="tab" data-bs-target="#configSmtp" type="button" role="tab" aria-controls="configSmtp" aria-selected="false"><i class="bi bi-paperclip me-2"></i>SMTP presupuestos</button>
                 </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="ayuda-tab" data-bs-toggle="tab" data-bs-target="#configAyuda" type="button" role="tab" aria-controls="configAyuda" aria-selected="false"><i class="bi bi-book me-2"></i>Manual y licencia</button>
+                </li>
             </ul>
         </div>
         <div class="card-body p-4">
@@ -196,7 +287,9 @@ require __DIR__ . '/includes/layout-header.php';
                         <p>Informacion visible en el presupuesto y en la plantilla PDF.</p>
                     </div>
                     <div class="row g-3 settings-fields">
-                <div class="col-12"><label class="form-label">Nombre empresa</label><input class="form-control" name="nombre_empresa" value="<?php echo htmlspecialchars($configuracion['nombre_empresa'] ?? '', ENT_QUOTES, 'UTF-8'); ?>" required></div>
+                <div class="col-md-6"><label class="form-label">Nombre comercial</label><input class="form-control" name="nombre_comercial" value="<?php echo htmlspecialchars($configuracion['nombre_comercial'] ?? ($configuracion['nombre_empresa'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" required></div>
+                <div class="col-md-6"><label class="form-label">Nombre fiscal / razon social</label><input class="form-control" name="nombre_fiscal" value="<?php echo htmlspecialchars($configuracion['nombre_fiscal'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"></div>
+                <div class="col-12"><label class="form-label">Nombre empresa interno</label><input class="form-control" name="nombre_empresa" value="<?php echo htmlspecialchars($configuracion['nombre_empresa'] ?? '', ENT_QUOTES, 'UTF-8'); ?>" required></div>
                 <div class="col-md-6"><label class="form-label">Email empresa</label><input class="form-control" type="email" name="email_empresa" value="<?php echo htmlspecialchars($configuracion['email_empresa'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"></div>
                 <div class="col-md-6"><label class="form-label">Telefono empresa</label><input class="form-control" name="telefono_empresa" value="<?php echo htmlspecialchars($configuracion['telefono_empresa'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"></div>
                 <div class="col-12"><label class="form-label">Direccion empresa</label><input class="form-control" name="direccion_empresa" value="<?php echo htmlspecialchars($configuracion['direccion_empresa'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"></div>
@@ -204,19 +297,37 @@ require __DIR__ . '/includes/layout-header.php';
                 <div class="col-md-4"><label class="form-label">Ciudad</label><input class="form-control" name="ciudad_empresa" value="<?php echo htmlspecialchars($configuracion['ciudad_empresa'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"></div>
                 <div class="col-md-4"><label class="form-label">Provincia</label><input class="form-control" name="provincia_empresa" value="<?php echo htmlspecialchars($configuracion['provincia_empresa'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"></div>
                 <div class="col-md-4"><label class="form-label">Codigo postal</label><input class="form-control" name="codigo_postal_empresa" value="<?php echo htmlspecialchars($configuracion['codigo_postal_empresa'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"></div>
+                <div class="col-md-6"><label class="form-label">Pais</label><input class="form-control" name="pais_empresa" value="<?php echo htmlspecialchars($configuracion['pais_empresa'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"></div>
+                <div class="col-md-6"><label class="form-label">Web</label><input class="form-control" type="url" name="web_empresa" value="<?php echo htmlspecialchars($configuracion['web_empresa'] ?? '', ENT_QUOTES, 'UTF-8'); ?>" placeholder="https://..."></div>
+                <div class="col-12 pt-3 border-top mt-4">
+                    <h3 class="settings-subtitle">Logo del documento</h3>
+                    <?php if (!empty($configuracion['logo_documento'])): ?>
+                        <img id="logoDocumentoActual" src="<?php echo htmlspecialchars($configuracion['logo_documento'], ENT_QUOTES, 'UTF-8'); ?>" alt="Logo actual" class="logo-documento-preview mb-2">
+                        <div id="logoDocumentoVacio" class="text-muted small d-none">No hay logo configurado.</div>
+                    <?php else: ?>
+                        <img id="logoDocumentoActual" src="" alt="Logo actual" class="logo-documento-preview mb-2 d-none">
+                        <div id="logoDocumentoVacio" class="text-muted small">No hay logo configurado.</div>
+                    <?php endif; ?>
+                    <input class="form-control" type="file" name="logo_documento" accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp">
+                    <div class="form-text">Este logo se usara en presupuestos y documentos PDF. Maximo 2 MB.</div>
+                    <div class="form-check mt-2">
+                        <input class="form-check-input" type="checkbox" name="eliminar_logo_documento" value="1" id="eliminarLogoDocumento">
+                        <label class="form-check-label" for="eliminarLogoDocumento">Eliminar logo actual</label>
+                    </div>
+                </div>
                     </div>
                 </div>
 
                 <div class="tab-pane fade" id="configApi" role="tabpanel" aria-labelledby="api-tab" tabindex="0">
                     <div class="settings-title">
                         <h2>Mailrelay API y diagnostico</h2>
-                        <p>En Railway, la API por HTTPS es el metodo recomendado porque funciona sin depender de puertos SMTP.</p>
+                        <p>La API por HTTPS es recomendable si tu servidor o proveedor bloquea la salida SMTP.</p>
                     </div>
                     <div class="row g-3 settings-fields">
                         <div class="col-12">
                             <div class="alert alert-info mb-0 small">
-                                En Railway Free, Trial y Hobby, el SMTP saliente esta bloqueado. Usa Mailrelay API por HTTPS o confirma conectividad desde el diagnostico si tu plan es Pro.
-                                <a class="alert-link ms-1" href="diagnostico-mailrelay.php">Abrir diagnostico Railway</a>
+                                Algunos hostings bloquean SMTP saliente. Usa Mailrelay API por HTTPS si SMTP no conecta o confirma conectividad desde el diagnostico.
+                                <a class="alert-link ms-1" href="diagnostico-mailrelay.php">Abrir diagnostico Mailrelay</a>
                             </div>
                         </div>
                         <div class="col-12">
@@ -258,16 +369,16 @@ require __DIR__ . '/includes/layout-header.php';
                 <div class="tab-pane fade" id="configSmtp" role="tabpanel" aria-labelledby="smtp-tab" tabindex="0">
                     <div class="settings-title">
                         <h2>Mailrelay SMTP para presupuestos adjuntos</h2>
-                        <p>Usalo solo si el plan de Railway permite SMTP y la prueba de conectividad responde correctamente.</p>
+                        <p>Usalo si tu servidor permite salida SMTP y la prueba de conectividad responde correctamente.</p>
                     </div>
                     <div class="row g-3 settings-fields">
                         <div class="col-lg-7">
                             <label class="form-label">Metodo de envio</label>
                             <select class="form-select" name="mailrelay_metodo_envio_facturas">
                                 <option value="smtp" <?php echo ($configuracion['mailrelay_metodo_envio_facturas'] ?? 'smtp') === 'smtp' ? 'selected' : ''; ?>>SMTP Mailrelay (requiere conectividad SMTP)</option>
-                                <option value="api" <?php echo ($configuracion['mailrelay_metodo_envio_facturas'] ?? 'smtp') === 'api' ? 'selected' : ''; ?>>API Mailrelay (recomendado en Railway)</option>
+                                <option value="api" <?php echo ($configuracion['mailrelay_metodo_envio_facturas'] ?? 'smtp') === 'api' ? 'selected' : ''; ?>>API Mailrelay (recomendado si SMTP esta bloqueado)</option>
                             </select>
-                            <div class="form-text">SMTP permite copia oculta real, pero Railway Free, Trial y Hobby lo bloquean. Prueba API y conectividad SMTP antes de seleccionar el metodo.</div>
+                            <div class="form-text">SMTP permite copia oculta real, pero algunos servidores bloquean la salida SMTP. Prueba API y conectividad SMTP antes de seleccionar el metodo.</div>
                         </div>
                         <div class="col-lg-5 d-flex align-items-end pb-2">
                             <div class="form-check form-switch">
@@ -303,7 +414,7 @@ require __DIR__ . '/includes/layout-header.php';
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Email remitente</label>
-                            <input class="form-control" type="email" name="mailrelay_from_email" value="<?php echo htmlspecialchars($configuracion['mailrelay_from_email'] ?? MAILRELAY_FROM_EMAIL_DEFAULT, ENT_QUOTES, 'UTF-8'); ?>" placeholder="info@podasytalasjjh.es" required>
+                            <input class="form-control" type="email" name="mailrelay_from_email" value="<?php echo htmlspecialchars($configuracion['mailrelay_from_email'] ?? MAILRELAY_FROM_EMAIL_DEFAULT, ENT_QUOTES, 'UTF-8'); ?>" placeholder="facturas@tu-dominio.com" required>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Nombre remitente</label>
@@ -346,6 +457,39 @@ require __DIR__ . '/includes/layout-header.php';
                         </div>
                     </div>
                 </div>
+                <div class="tab-pane fade" id="configAyuda" role="tabpanel" aria-labelledby="ayuda-tab" tabindex="0">
+                    <div class="settings-title">
+                        <h2>Manual de uso y licencia</h2>
+                        <p>Consulta las pautas basicas de uso, copias de seguridad, correo y condiciones de licencia.</p>
+                    </div>
+                    <div class="row g-3 settings-fields">
+                        <div class="col-md-6">
+                            <div class="help-card">
+                                <div class="help-card-icon"><i class="bi bi-book"></i></div>
+                                <h3>Manual de uso</h3>
+                                <p>Guia rapida para configurar la empresa, crear presupuestos, usar estados, hacer backups y entender Mailrelay.</p>
+                                <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#modalManual">
+                                    <i class="bi bi-journal-text"></i> Ver manual
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="help-card">
+                                <div class="help-card-icon"><i class="bi bi-shield-check"></i></div>
+                                <h3>Licencia</h3>
+                                <p>Uso gratuito para autonomos y pequenas empresas dentro de los limites indicados en la licencia.</p>
+                                <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#modalLicencia">
+                                    <i class="bi bi-file-earmark-text"></i> Ver licencia
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="license-note">
+                                Your Small Desk &middot; Desarrollado por Diego Herrera Ayuso
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -360,7 +504,7 @@ require __DIR__ . '/includes/layout-header.php';
             <div class="card-body p-4">
                 <div class="settings-title mb-4">
                     <h2><i class="bi bi-person-lock me-2"></i>Cuenta</h2>
-                    <p>Cambia el correo y la contrasena de acceso a JJH Space.</p>
+                    <p>Cambia el correo y la contrasena de acceso a Your Small Desk.</p>
                 </div>
                 <div class="account-current mb-4">
                     <span class="text-muted small">Correo actual</span>
@@ -489,6 +633,79 @@ require __DIR__ . '/includes/layout-header.php';
                 <button type="submit" class="btn btn-danger">Eliminar clientes definitivamente</button>
             </div>
         </form>
+    </div>
+</div>
+
+<div class="modal fade" id="modalManual" tabindex="-1" aria-labelledby="modalManualTitulo" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable modal-fullscreen-sm-down">
+        <div class="modal-content manual-modal">
+            <div class="modal-header">
+                <div>
+                    <h2 class="modal-title fs-5" id="modalManualTitulo">Manual rapido de Your Small Desk</h2>
+                    <div class="text-muted small">Guia local para uso diario de la app.</div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <pre class="manual-output" id="manualTypewriter"></pre>
+                <script type="text/plain" id="manualTexto">Manual rapido de Your Small Desk
+
+1. Que es Your Small Desk
+Your Small Desk es una app local para crear presupuestos, clientes y PDFs. Esta pensada para autonomos y pequenos negocios. En modo escritorio no necesita servidor externo.
+
+2. Primer uso
+Configura los datos de empresa, sube el logo del documento, crea el usuario administrador y cambia la contrasena inicial despues del primer acceso.
+
+3. Clientes
+Puedes crear, editar y eliminar clientes. Los clientes se pueden seleccionar al crear un presupuesto para rellenar sus datos en el documento.
+
+4. Presupuestos
+Crea un presupuesto, anade conceptos, elige Con IVA o Sin IVA, guarda, descarga el PDF, envia por correo si Mailrelay esta configurado o abre WhatsApp con el mensaje preparado.
+
+5. Estados
+Los estados disponibles son borrador, emitido, enviado, cobrado, rechazado y vencido. Los resumenes se calculan desde el estado actual de cada presupuesto.
+
+6. Trimestres
+La vista de trimestres ayuda a revisar cobrados, pendientes y rechazados. Sirve para control interno y para preparar informacion para la gestoria.
+
+7. Copias de seguridad
+Guarda una copia de data/jjh_space.sqlite y de la carpeta storage/. Ahi estan la base de datos, PDFs generados, logos y archivos de trabajo.
+
+8. Mailrelay y correos
+La API usa HTTPS y suele funcionar incluso en servidores que bloquean SMTP. SMTP usa puertos de correo como 465 o 587, puede estar bloqueado por algunos proveedores y es recomendable si necesitas copia oculta real BCC y el servidor lo permite.
+
+9. Servidores sin salida SMTP
+Algunos servidores bloquean puertos SMTP. En ese caso usa API. SMTP no es SSH: SSH sirve para acceso remoto y SMTP sirve para enviar correo.
+
+10. Licencia
+Your Small Desk tiene uso gratuito limitado para autonomos, pequenos negocios, uso personal y uso educativo. Grandes empresas, facturacion alta o usos comerciales ampliados requieren autorizacion del autor. No elimines la autoria de Diego Herrera Ayuso.</script>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-primary" id="btnManualMostrarTodo">Mostrar todo</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalLicencia" tabindex="-1" aria-labelledby="modalLicenciaTitulo" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable modal-fullscreen-sm-down">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title fs-5" id="modalLicenciaTitulo">Licencia Your Small Desk Community License</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body license-summary">
+                <p><strong>Your Small Desk · Desarrollado por Diego Herrera Ayuso.</strong></p>
+                <p>Uso gratuito permitido para autonomos, pequenos negocios, microempresas, uso personal, uso educativo y uso interno no masivo.</p>
+                <p>No esta permitido sin autorizacion escrita del autor: uso por empresas medianas o grandes, facturacion anual superior a 100.000 EUR, reventa, redistribucion como producto propio, ofrecerlo como SaaS o servicio alojado a terceros, integrarlo en productos comerciales de terceros o eliminar avisos de autoria.</p>
+                <p>Si superas estos limites o quieres usar Your Small Desk en una empresa mayor, contacta con Diego Herrera Ayuso para obtener una licencia comercial.</p>
+                <p>Consulta el archivo LICENSE del proyecto para ver las condiciones completas.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
     </div>
 </div>
 

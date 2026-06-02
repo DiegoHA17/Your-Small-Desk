@@ -1,5 +1,10 @@
 <?php
 $paginaActual = basename($_SERVER['PHP_SELF']);
+$nombreEmpresaSidebar = 'Your Small Desk';
+if (function_exists('obtenerConfiguracion')) {
+    $configSidebar = obtenerConfiguracion();
+    $nombreEmpresaSidebar = trim((string) ($configSidebar['nombre_comercial'] ?: ($configSidebar['nombre_empresa'] ?? ''))) ?: 'Your Small Desk';
+}
 
 function navActivo(string $archivo, string $paginaActual): string
 {
@@ -28,8 +33,8 @@ function renderizarEnlacesSidebar(string $paginaActual): void
 ?>
 <aside class="sidebar-desktop d-none d-lg-flex" id="sidebar">
     <div class="sidebar-brand">
-        <div class="sidebar-brand-title">Podas y Talas JJH</div>
-        <div class="sidebar-brand-subtitle">JJH Space</div>
+        <div class="sidebar-brand-title"><?php echo htmlspecialchars($nombreEmpresaSidebar, ENT_QUOTES, 'UTF-8'); ?></div>
+        <div class="sidebar-brand-subtitle">Your Small Desk</div>
     </div>
     <?php renderizarEnlacesSidebar($paginaActual); ?>
 </aside>
@@ -39,8 +44,8 @@ function renderizarEnlacesSidebar(string $paginaActual): void
         <div class="d-flex align-items-center gap-2">
             <img src="assets/img/logo-jjh.png" alt="" class="brand-logo">
             <div>
-                <div class="sidebar-brand-title" id="sidebarMovilTitulo">JJH Space</div>
-                <div class="sidebar-brand-subtitle">Podas y Talas JJH</div>
+                <div class="sidebar-brand-title" id="sidebarMovilTitulo">Your Small Desk</div>
+                <div class="sidebar-brand-subtitle"><?php echo htmlspecialchars($nombreEmpresaSidebar, ENT_QUOTES, 'UTF-8'); ?></div>
             </div>
         </div>
         <button class="btn-close" type="button" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMovil" aria-label="Cerrar menu"></button>

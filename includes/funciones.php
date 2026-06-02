@@ -32,7 +32,7 @@ function badgeEstado(string $estado): string
 function configuracionPorDefecto(): array
 {
     return [
-        'nombre_empresa' => 'Podas y Talas JJH',
+        'nombre_empresa' => 'Your Small Desk',
         'email_empresa' => '',
         'telefono_empresa' => '',
         'direccion_empresa' => '',
@@ -40,6 +40,12 @@ function configuracionPorDefecto(): array
         'ciudad_empresa' => '',
         'provincia_empresa' => '',
         'codigo_postal_empresa' => '',
+        'setup_completado' => 0,
+        'nombre_comercial' => 'Your Small Desk',
+        'nombre_fiscal' => '',
+        'pais_empresa' => '',
+        'web_empresa' => '',
+        'logo_documento' => '',
         'mailrelay_api_url' => MAILRELAY_API_URL_DEFAULT,
         'mailrelay_api_key' => MAILRELAY_API_KEY_DEFAULT,
         'mailrelay_from_email' => MAILRELAY_FROM_EMAIL_DEFAULT,

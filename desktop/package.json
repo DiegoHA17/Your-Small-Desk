@@ -1,0 +1,84 @@
+{
+  "name": "your-small-desk",
+  "version": "0.1.0",
+  "description": "Aplicacion local de escritorio para gestion de presupuestos y clientes.",
+  "main": "main.js",
+  "author": "Diego Herrera Ayuso",
+  "license": "SEE LICENSE IN ../LICENSE",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder"
+  },
+  "devDependencies": {
+    "electron": "^30.5.1",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "es.yoursmalldesk.desktop",
+    "productName": "Your Small Desk",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "package.json",
+      "resources/**/*",
+      "php/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "php",
+        "to": "php",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "../",
+        "to": "jjh-space",
+        "filter": [
+          "*.php",
+          ".htaccess",
+          "acciones/**/*",
+          "assets/**/*",
+          "includes/**/*",
+          "plantillas/**/*",
+          "sql/**/*",
+          "storage/**/*",
+          "vendor/**/*",
+          "composer.json",
+          "composer.lock",
+          "manifest.json",
+          "!desktop/node_modules/**/*",
+          "!desktop/dist/**/*",
+          "!desktop/php/**/*",
+          "!storage/facturas/*.pdf",
+          "!storage/presupuestos/*.pdf",
+          "!storage/logs/**/*",
+          "!storage/tmp/**/*"
+        ]
+      }
+    ],
+    "win": {
+      "signAndEditExecutable": false,
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "resources/icon.ico"
+    },
+    "nsis": {
+      "artifactName": "Your-Small-Desk-Setup-${version}.${ext}",
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "portable": {
+      "artifactName": "Your-Small-Desk-Portable-${version}.${ext}"
+    }
+  }
+}

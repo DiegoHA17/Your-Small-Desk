@@ -9,6 +9,10 @@ if ($accion !== 'login') {
 exigirMetodoPost();
 validarCsrf();
 
+if (!setupCompletado()) {
+    responderJson(false, 'Completa la configuracion inicial antes de iniciar sesion.');
+}
+
 $email = limpiarCadena($_POST['email'] ?? '');
 $password = (string) ($_POST['password'] ?? '');
 

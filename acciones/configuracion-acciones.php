@@ -14,7 +14,7 @@ validarCsrf();
 $accion = limpiarCadena($_POST['accion'] ?? '');
 $conexion = obtenerConexion();
 
-function obtenerUsuarioCuenta(mysqli $conexion): ?array
+function obtenerUsuarioCuenta($conexion): ?array
 {
     $idUsuario = (int) ($_SESSION['id_usuario'] ?? 0);
     $stmt = $conexion->prepare('SELECT id_usuario, email, password_hash FROM usuarios WHERE id_usuario = ? LIMIT 1');

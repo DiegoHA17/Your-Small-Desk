@@ -1,6 +1,6 @@
 {
-  "name": "jjh-space/app",
-  "description": "Aplicación privada para gestión de facturas de JJH Space",
+  "name": "your-small-desk/app",
+  "description": "Aplicacion local para gestion de presupuestos de Your Small Desk",
   "type": "project",
   "license": "proprietary",
   "require": {

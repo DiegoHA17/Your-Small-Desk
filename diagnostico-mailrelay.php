@@ -8,12 +8,12 @@ require __DIR__ . '/includes/layout-header.php';
 ?>
 <div class="d-flex flex-column gap-4">
     <div>
-        <h2 class="h4 mb-1">Diagnostico Mailrelay en Railway</h2>
+        <h2 class="h4 mb-1">Diagnostico Mailrelay</h2>
         <p class="text-muted mb-0">Comprueba la API HTTPS y la conectividad SMTP sin mostrar credenciales.</p>
     </div>
 
     <div class="alert alert-info mb-0" role="alert">
-        En Railway Free, Trial y Hobby, el SMTP saliente esta bloqueado. La API Mailrelay por HTTPS es la opcion preferente. En Pro, comprueba SMTP antes de usarlo.
+        Algunos servidores bloquean SMTP saliente. La API Mailrelay por HTTPS es la opcion preferente si tu proveedor no permite SMTP. Comprueba SMTP antes de usarlo.
     </div>
 
     <div class="row g-3">

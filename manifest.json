@@ -1,7 +1,7 @@
 {
-  "name": "JJH Space",
-  "short_name": "JJH Space",
-  "description": "Gestion de presupuestos de Podas y Talas JJH",
+  "name": "Your Small Desk",
+  "short_name": "Your Small Desk",
+  "description": "Gestion local de presupuestos",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

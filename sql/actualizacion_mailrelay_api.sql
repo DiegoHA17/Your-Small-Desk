@@ -1,6 +1,3 @@
--- Ejecuta esta migracion sobre la base seleccionada.
--- Local: selecciona jjh_space. Railway: selecciona railway.
-
 SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 ALTER TABLE configuracion
@@ -30,5 +27,5 @@ UPDATE configuracion
 SET mailrelay_api_url = COALESCE(mailrelay_api_url, 'https://TU_CUENTA.ipzmarketing.com/api/v1/send_emails'),
     mailrelay_api_key = COALESCE(mailrelay_api_key, 'TU_API_KEY_MAILRELAY'),
     mailrelay_from_email = COALESCE(mailrelay_from_email, 'facturas@tudominio.com'),
-    mailrelay_from_name = COALESCE(mailrelay_from_name, 'Podas y Talas JJH')
+    mailrelay_from_name = COALESCE(mailrelay_from_name, 'Your Small Desk')
 WHERE id_configuracion = 1;

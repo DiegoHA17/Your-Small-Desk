@@ -6,6 +6,10 @@ exigirSesion();
 $clientes = obtenerClientesParaSelector();
 $codigoPrevisto = generarCodigoFactura();
 $configuracionVista = obtenerConfiguracion();
+$nombreEmpresaVista = trim((string) ($configuracionVista['nombre_comercial'] ?: ($configuracionVista['nombre_empresa'] ?? '')));
+$nombreEmpresaVista = $nombreEmpresaVista !== '' ? $nombreEmpresaVista : 'Your Small Desk';
+$nombreFiscalVista = trim((string) ($configuracionVista['nombre_fiscal'] ?? ''));
+$logoDocumentoVista = trim((string) ($configuracionVista['logo_documento'] ?? ''));
 $emailEmpresaVista = $configuracionVista['email_empresa'] ?: ($configuracionVista['mailrelay_from_email'] ?? '');
 $telefonoEmpresaVista = (string) ($configuracionVista['telefono_empresa'] ?? '');
 $direccionEmpresaVista = trim(implode(' ', array_filter([
@@ -13,6 +17,7 @@ $direccionEmpresaVista = trim(implode(' ', array_filter([
     $configuracionVista['codigo_postal_empresa'] ?? '',
     $configuracionVista['ciudad_empresa'] ?? '',
     $configuracionVista['provincia_empresa'] ?? '',
+    $configuracionVista['pais_empresa'] ?? '',
 ])));
 $tituloPagina = 'Nuevo presupuesto';
 $jsPagina = 'facturas.js';
@@ -130,8 +135,12 @@ require __DIR__ . '/includes/layout-header.php';
             <div class="preview-paper position-sticky" style="top: 132px;">
                 <div class="paper-header">
                     <div class="paper-brand">
-                        <img src="assets/img/logo-presupuesto-jjh.png" class="paper-logo paper-logo-documento" alt="Podas y Talas JJH">
+                        <?php if ($logoDocumentoVista !== ''): ?>
+                            <img src="<?php echo htmlspecialchars($logoDocumentoVista, ENT_QUOTES, 'UTF-8'); ?>" class="paper-logo paper-logo-documento" alt="<?php echo htmlspecialchars($nombreEmpresaVista, ENT_QUOTES, 'UTF-8'); ?>">
+                        <?php endif; ?>
+                        <h2><?php echo htmlspecialchars($nombreEmpresaVista, ENT_QUOTES, 'UTF-8'); ?></h2>
                         <div class="paper-company-data" aria-label="Datos de la empresa">
+                            <?php if ($nombreFiscalVista !== ''): ?><div class="paper-contact"><?php echo htmlspecialchars($nombreFiscalVista, ENT_QUOTES, 'UTF-8'); ?></div><?php endif; ?>
                             <?php if ($emailEmpresaVista !== '' || $telefonoEmpresaVista !== ''): ?>
                                 <div class="paper-contact"><?php echo htmlspecialchars(implode(' | ', array_filter([$emailEmpresaVista, $telefonoEmpresaVista]))); ?></div>
                             <?php endif; ?>

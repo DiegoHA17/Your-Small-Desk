@@ -46,6 +46,15 @@ iniciarSesionSegura();
 
 function exigirSesion(): void
 {
+    if (!setupCompletado()) {
+        $script = str_replace('\\', '/', $_SERVER['SCRIPT_NAME'] ?? '');
+        if (strpos($script, '/acciones/') !== false) {
+            responderJson(false, 'Completa la configuracion inicial antes de continuar.');
+        }
+        header('Location: setup.php');
+        exit;
+    }
+
     if (empty($_SESSION['id_usuario'])) {
         $script = str_replace('\\', '/', $_SERVER['SCRIPT_NAME'] ?? '');
         if (strpos($script, '/acciones/') !== false) {

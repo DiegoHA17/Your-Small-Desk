@@ -1,7 +1,3 @@
--- Importa este archivo sobre la base seleccionada.
--- Local: crea/selecciona jjh_space antes de importar.
--- Railway: selecciona la base railway; no se fuerza un nombre distinto aqui.
-
 SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 DROP TABLE IF EXISTS envios;
@@ -38,7 +34,7 @@ CREATE TABLE clientes (
 
 CREATE TABLE configuracion (
   id_configuracion INT UNSIGNED PRIMARY KEY,
-  nombre_empresa VARCHAR(160) NOT NULL DEFAULT 'Podas y Talas JJH',
+  nombre_empresa VARCHAR(160) NOT NULL DEFAULT 'Your Small Desk',
   email_empresa VARCHAR(160) DEFAULT NULL,
   telefono_empresa VARCHAR(50) DEFAULT NULL,
   direccion_empresa VARCHAR(255) DEFAULT NULL,
@@ -46,6 +42,12 @@ CREATE TABLE configuracion (
   ciudad_empresa VARCHAR(120) DEFAULT NULL,
   provincia_empresa VARCHAR(120) DEFAULT NULL,
   codigo_postal_empresa VARCHAR(20) DEFAULT NULL,
+  setup_completado TINYINT(1) NOT NULL DEFAULT 0,
+  nombre_comercial VARCHAR(160) DEFAULT NULL,
+  nombre_fiscal VARCHAR(180) DEFAULT NULL,
+  pais_empresa VARCHAR(120) DEFAULT NULL,
+  web_empresa VARCHAR(180) DEFAULT NULL,
+  logo_documento VARCHAR(255) DEFAULT NULL,
   mailrelay_api_url VARCHAR(255) DEFAULT NULL,
   mailrelay_api_key VARCHAR(255) DEFAULT NULL,
   mailrelay_from_email VARCHAR(150) DEFAULT NULL,
@@ -133,7 +135,7 @@ INSERT INTO configuracion (
   mailrelay_from_email, mailrelay_from_name, mailrelay_metodo_envio_facturas,
   mailrelay_smtp_fallback_activo, mailrelay_smtp_port, mailrelay_smtp_seguridad
 ) VALUES (
-  1, 'Podas y Talas JJH', 'https://TU_CUENTA.ipzmarketing.com/api/v1/send_emails',
-  'TU_API_KEY_MAILRELAY', 'facturas@tudominio.com', 'Podas y Talas JJH',
+  1, 'Your Small Desk', 'https://TU_CUENTA.ipzmarketing.com/api/v1/send_emails',
+  'TU_API_KEY_MAILRELAY', 'facturas@tudominio.com', 'Your Small Desk',
   'smtp', 1, 587, 'tls'
 );
