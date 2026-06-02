@@ -230,6 +230,6 @@ La carpeta `desktop/dist/` se ha eliminado del arbol local para evitar subir ins
 - No subir `desktop/dist/` al repo.
 - Revisar legalmente compatibilidad de mPDF GPL-2.0-only con la licencia propia si se va a distribuir publicamente.
 - Confirmar permiso/autoria de los recursos graficos incluidos.
-- Cambiar `TU_USUARIO` del enlace de README por el usuario real de GitHub.
+- Enlace de descarga del README configurado hacia `DiegoHA17/Your-Small-Desk`.
 - Anadir capturas reales sin datos privados en `docs/screenshots/`.
 - Revisar el contenido final de la Release antes de publicarla.

@@ -6,26 +6,26 @@
 ![License](https://img.shields.io/badge/license-community--limited-174D2A)
 
 <p align="center">
-  <a href="https://github.com/TU_USUARIO/your-small-desk/releases/latest">
-    <img src="https://img.shields.io/badge/Descargar-ultima%20version-174D2A?style=for-the-badge&logo=windows&logoColor=white" alt="Descargar Your Small Desk">
+  <a href="https://github.com/DiegoHA17/Your-Small-Desk/releases/latest">
+    <img src="https://img.shields.io/badge/Descargar-última%20versión-174D2A?style=for-the-badge&logo=windows&logoColor=white" alt="Descargar Your Small Desk">
   </a>
 </p>
 
-Your Small Desk es una aplicacion local de escritorio para crear presupuestos, gestionar clientes, generar PDFs y controlar estados de cobro, pensada para autonomos, pequenos negocios y microempresas.
+Your Small Desk es una aplicación local de escritorio para crear presupuestos, gestionar clientes, generar PDFs y controlar estados de cobro, pensada para autónomos, pequeños negocios y microempresas.
 
-La version de escritorio usa PHP, SQLite y Electron. No necesita servidor externo para trabajar en local.
+La versión de escritorio usa PHP, SQLite y Electron. No necesita servidor externo para trabajar en local.
 
 Your Small Desk · Desarrollado por Diego Herrera Ayuso
 
-## Que es Your Small Desk
+## Qué es Your Small Desk
 
-Una herramienta sencilla para trabajar desde un ordenador Windows con presupuestos, clientes, PDFs, estados y resumenes trimestrales sin depender de una plataforma externa.
+Una herramienta sencilla para trabajar desde un ordenador Windows con presupuestos, clientes, PDFs, estados y resúmenes trimestrales sin depender de una plataforma externa.
 
 ## Descargar
 
-Cuando haya una version empaquetada, estara disponible en la seccion Releases de GitHub:
+Descarga la última versión instalable desde la sección Releases de GitHub:
 
-[Descargar ultima version](https://github.com/TU_USUARIO/your-small-desk/releases/latest)
+[Descargar última versión](https://github.com/DiegoHA17/Your-Small-Desk/releases/latest)
 
 ## Caracteristicas
 
