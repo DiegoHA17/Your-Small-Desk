@@ -1,245 +1,204 @@
 # Your Small Desk
 
-![PHP](https://img.shields.io/badge/PHP-8.1%2B-777BB4)
-![SQLite](https://img.shields.io/badge/SQLite-local-003B57)
-![Electron](https://img.shields.io/badge/Electron-desktop-47848F)
-![License](https://img.shields.io/badge/license-community--limited-174D2A)
+Gestiona clientes, crea presupuestos y genera PDFs desde una aplicación de escritorio con almacenamiento local SQLite, pensada para autónomos y pequeños negocios.
 
-<p align="center">
-  <a href="https://github.com/DiegoHA17/Your-Small-Desk/releases/latest">
-    <img src="https://img.shields.io/badge/Descargar-ultima%20version-174D2A?style=for-the-badge&logo=windows&logoColor=white" alt="Descargar Your Small Desk">
-  </a>
-</p>
-
-Your Small Desk es una aplicacion local de escritorio para crear presupuestos, gestionar clientes, generar PDFs y controlar estados de cobro, pensada para autonomos, pequenos negocios y microempresas.
-
-La version de escritorio usa PHP, SQLite y Electron. No necesita servidor externo para trabajar en local.
+La aplicación combina **PHP y Electron** y no necesita un servidor externo para trabajar en modo escritorio. El envío de correo mediante Mailrelay es opcional.
 
 Your Small Desk · Desarrollado por Diego Herrera Ayuso
 
-El instalador de Windows puede incluir PHP portable para funcionar sin instalar PHP manualmente. PHP se redistribuye bajo PHP License 3.01 y conserva su aviso de licencia dentro del paquete.
+## Qué puedes hacer
 
-## Que es Your Small Desk
+- **Gestionar clientes:** crear, editar y eliminar sus fichas, y reutilizar sus datos en presupuestos.
+- **Preparar presupuestos:** añadir conceptos, cantidades y precios, con IVA o sin IVA.
+- **Generar documentos PDF** con los datos de tu empresa y su logo.
+- **Controlar estados:** borrador, emitido, enviado, cobrado, rechazado y vencido.
+- **Consultar resúmenes trimestrales** de importes y presupuestos.
+- **Compartir presupuestos:** enviarlos por correo con Mailrelay configurado o abrir WhatsApp con un mensaje preparado.
 
-Una herramienta sencilla para trabajar desde un ordenador Windows con presupuestos, clientes, PDFs, estados y resumenes trimestrales sin depender de una plataforma externa.
+Los resúmenes trimestrales sirven como apoyo para el control interno y para preparar información destinada a la gestoría.
 
-## Descargar
+## Distribución e instalación
 
-Descarga la ultima version instalable desde la seccion Releases de GitHub:
+La configuración de empaquetado incluye dos formatos para **Windows**: instalador NSIS y aplicación portable. La versión declarada en [desktop/package.json](desktop/package.json) es **0.1.0**.
 
-[Descargar ultima version](https://github.com/DiegoHA17/Your-Small-Desk/releases/latest)
+Las [notas de la versión 0.1.0](docs/release-notes-v0.1.0.md) describen la primera distribución instalable. La disponibilidad actual de descargas publicadas está pendiente de comprobar.
 
-## Caracteristicas
+Si dispones del instalador:
 
-- Gestion de clientes.
-- Creacion de presupuestos.
-- Exportacion a PDF.
-- Estados: borrador, emitido, enviado, cobrado, rechazado y vencido.
-- Resumen por trimestres.
-- Configuracion de datos de empresa.
-- Logo personalizable para documentos.
-- Funcionamiento local con SQLite.
-- Version de escritorio con Electron.
-- Sin necesidad de servidor externo.
-- Copias de seguridad sencillas copiando la base SQLite y la carpeta `storage/`.
-- Mailrelay opcional por API o SMTP.
+1. Instala Your Small Desk.
+2. Abre la aplicación.
+3. Completa el asistente inicial.
+4. Accede con el usuario que acabas de crear.
 
-## Capturas
+El paquete puede incluir PHP portable para evitar su instalación manual. Al compilar desde el código, debes incorporarlo siguiendo las instrucciones de desarrollo.
 
-Pendiente anadir capturas.
+## Primer presupuesto
 
-- `docs/screenshots/login.png`
-- `docs/screenshots/dashboard.png`
-- `docs/screenshots/presupuesto.png`
-- `docs/screenshots/configuracion.png`
+En el primer inicio, el asistente permite configurar los datos de empresa, el logo del documento y el usuario administrador con su correo y contraseña.
 
-## Instalacion para usuario normal
+Después:
 
-1. Descarga la ultima version desde Releases.
-2. Instala Your Small Desk.
-3. Abre la aplicacion.
-4. Completa la configuracion inicial.
-5. Entra con el usuario creado.
-
-## Primer uso
-
-La primera vez que abras la app aparecera un asistente para configurar:
-
-- datos de empresa;
-- logo del documento;
-- usuario administrador;
-- correo de acceso;
-- contrasena.
-
-Despues de completar el asistente, entra desde el login con el usuario creado.
-
-## Configuracion inicial
-
-Los datos de empresa y el logo se usan en presupuestos, PDFs y documentos generados.
-
-Puedes cambiarlos despues desde:
-
-```text
-Configuracion -> Empresa
-```
-
-El logo del documento no reemplaza obligatoriamente el favicon ni el branding interno de Your Small Desk.
-
-## Crear presupuestos
-
-1. Crea o selecciona un cliente.
-2. Abre Nuevo presupuesto.
-3. Anade conceptos, cantidad y precio.
-4. Elige Con IVA o Sin IVA.
+1. Crea un cliente o selecciona uno existente.
+2. Abre **Nuevo presupuesto**.
+3. Añade los conceptos, cantidades y precios.
+4. Elige **Con IVA** o **Sin IVA**.
 5. Guarda el presupuesto.
-6. Descarga el PDF o usa las acciones de correo/WhatsApp si estan configuradas.
+6. Descarga el PDF o utiliza las opciones de comunicación disponibles.
 
-## Datos de empresa y logo
+Puedes modificar los datos de empresa y el logo desde **Configuración → Empresa**. Estos datos se utilizan en los presupuestos y documentos generados.
 
-La app permite configurar nombre comercial, datos fiscales, direccion, contacto y logo del documento. El logo subido se usa en presupuestos y PDFs.
+Los formatos de logo documentados son PNG, JPG/JPEG y WEBP, con un tamaño máximo de 2 MB. El logo del documento es independiente del icono y de la identidad visual de la aplicación.
 
-Solo se aceptan logos `png`, `jpg`, `jpeg` o `webp` de hasta 2 MB. No subas logos reales al repositorio.
+Para ampliar estas instrucciones, consulta el [manual rápido](docs/manual.md), también accesible desde **Configuración → Manual y licencia → Ver manual**.
 
-## Correos / Mailrelay
+## Correo opcional con Mailrelay
 
-Mailrelay es opcional. Puedes configurar API y SMTP por separado desde la app. El metodo activo decide cual se usa al enviar presupuestos.
+Puedes usar la aplicación sin configurar correo para crear presupuestos y descargar PDFs. Mailrelay ofrece dos métodos de envío cuya configuración se guarda por separado:
 
-API:
+| Método | Cuándo utilizarlo |
+| --- | --- |
+| API mediante HTTPS | Si el proveedor bloquea las conexiones SMTP. Requiere una cuenta Mailrelay habilitada para enviar. |
+| SMTP | Si la red permite conexiones de correo saliente; puede ser útil cuando necesitas copia oculta BCC. |
 
-- usa HTTPS;
-- suele funcionar aunque el servidor bloquee SMTP;
-- recomendada si el proveedor no permite salida SMTP;
-- depende de que la cuenta Mailrelay este aprobada.
+El método activo determina cómo se envían los presupuestos. Guardar la configuración API no elimina la configuración SMTP, ni a la inversa.
 
-SMTP:
+Según el comportamiento documentado, dejar vacía una API key o contraseña SMTP ya configurada conserva el valor anterior. Una cuenta Mailrelay pendiente de aprobación debe resolverse con el proveedor.
 
-- usa puertos de correo como 465 o 587;
-- puede estar bloqueado en algunos hostings o servidores;
-- es util para copia oculta real BCC si el servidor lo permite.
+## Datos y copias de seguridad
 
-Si tu servidor bloquea SMTP, usa API. Si necesitas copia oculta real y el servidor permite SMTP, usa SMTP.
-
-Si dejas vacia la API key al guardar la configuracion API, la clave anterior se conserva. Si dejas vacia la contrasena SMTP al guardar la configuracion SMTP, la contrasena anterior se conserva.
-
-## Copias de seguridad
-
-Para hacer copia de seguridad, copia:
+La documentación utiliza esta ubicación predeterminada para la base SQLite:
 
 ```text
 data/jjh_space.sqlite
-storage/
 ```
 
-El nombre `jjh_space.sqlite` es tecnico heredado y puede mantenerse aunque el nombre visible de la app sea Your Small Desk.
+El nombre `jjh_space.sqlite` es un identificador técnico heredado. También se conservan nombres internos como `jjh-space` y archivos relacionados con `facturas`.
 
-Ahi estan:
+Para las copias de seguridad, guarda:
 
-- base de datos;
-- PDFs generados;
-- logos;
-- archivos de trabajo.
+- La base SQLite que esté utilizando tu instalación.
+- La carpeta `storage/`, donde se almacenan PDFs, logos y archivos de trabajo.
 
-Guarda una copia periodica en un disco externo o nube privada.
+Comprueba la ubicación efectiva de los datos en tu instalación antes de hacer la copia, especialmente si has personalizado `SQLITE_PATH`. Guarda copias periódicas en un disco externo o en una nube privada.
+
+No publiques bases de datos, documentos de clientes, logos privados, logs, claves ni archivos `.env`.
 
 ## Desarrollo
 
-Instala dependencias PHP:
+### Tecnologías y requisitos
 
-```powershell
-composer install --no-dev --optimize-autoloader
-```
+- PHP **8.1 o superior**, según [composer.json](composer.json).
+- Composer para instalar mPDF y PHPMailer.
+- Node.js y npm para ejecutar Electron y el empaquetador.
+- PHP portable para preparar la distribución Windows.
 
-Ejecuta la version Electron:
+El manifiesto de escritorio declara Electron `^30.5.1` y electron-builder `^24.13.3`. No se especifica en las evidencias una versión mínima de Node.js.
 
-```powershell
-cd desktop
-npm install
-npm start
-```
+### Preparar PHP portable
 
-La app creara la base indicada por `SQLITE_PATH`. Si no defines esa variable, el fallback tecnico heredado sigue siendo `data/jjh_space.sqlite`.
-
-## Compilar instalador
-
-Antes de compilar, coloca PHP portable completo dentro de:
-
-```text
-desktop/php/
-```
-
-La carpeta debe contener:
+Coloca la distribución completa de PHP para Windows dentro de `desktop/php/`, incluyendo:
 
 ```text
 desktop/php/php.exe
 desktop/php/php.ini
 desktop/php/ext/
 desktop/php/*.dll
+desktop/php/extras/ssl/cacert.pem
+desktop/php/license.txt
 ```
 
-Activa en `php.ini` las extensiones `pdo_sqlite`, `sqlite3`, `mbstring`, `curl`, `fileinfo`, `gd` y `zip`. La app comprueba al arrancar las extensiones criticas `pdo_sqlite`, `sqlite3`, `fileinfo` y `mbstring`.
+La lista de preparación de releases requiere estas extensiones:
+
+```text
+pdo_sqlite
+sqlite3
+curl
+openssl
+mbstring
+fileinfo
+gd
+zip
+```
+
+Configura `curl.cainfo` y `openssl.cafile` para utilizar el certificado `cacert.pem`. Conserva también el archivo de licencia de PHP.
+
+Consulta la [lista de preparación de releases](docs/github-release-checklist.md) para revisar los requisitos de empaquetado.
+
+### Instalar dependencias y ejecutar
+
+Desde la raíz del proyecto, en PowerShell:
 
 ```powershell
 composer install --no-dev --optimize-autoloader
 cd desktop
 npm install
+npm start
+```
+
+`npm start` ejecuta `electron .`, según el manifiesto de escritorio.
+
+La variable `SQLITE_PATH` permite indicar la ubicación de la base de datos según la documentación existente. El archivo [.env.example](.env.example) enumera las variables previstas para la aplicación, sesiones, SQLite y Mailrelay; no publiques valores privados.
+
+### Generar los paquetes Windows
+
+Una vez preparado PHP portable y las dependencias:
+
+```powershell
+cd desktop
 npm run dist
 ```
 
-Los instaladores se generan en:
+Ejecuta este comando desde la raíz; si ya estás en `desktop/`, ejecuta únicamente `npm run dist`.
+
+La salida configurada es `desktop/dist/`, con estos nombres de artefacto:
 
 ```text
-desktop/dist/
+Your-Small-Desk-Setup-0.1.0.exe
+Your-Small-Desk-Portable-0.1.0.exe
 ```
 
-Si el instalador muestra "No se encontro PHP", recompila despues de colocar PHP portable completo en `desktop/php/`.
+Comprueba que el paquete incluye PHP, sus extensiones, el certificado, su licencia y las dependencias de Composer. Si aparece «No se encontró PHP», revisa `desktop/php/` y vuelve a compilar.
 
-Los `.exe` generados deben publicarse en GitHub Releases, no dentro del repositorio.
+Los instaladores y directorios generados deben mantenerse fuera del código versionado.
 
-## Seguridad
+### Estructura principal
 
-- Contrasenas guardadas con `password_hash`.
-- Acciones sensibles protegidas con CSRF.
-- Base SQLite local en `data/`.
-- PDFs y logos en `storage/`.
-- Subida de logos limitada a setup inicial y configuracion con sesion.
-- No subas `data/*.sqlite`, PDFs generados, logos reales, logs ni claves privadas.
-- Revisa `.gitignore` antes de publicar.
+| Ruta | Contenido |
+| --- | --- |
+| `desktop/` | Entrada Electron y configuración de empaquetado. |
+| `acciones/` | Acciones PHP de clientes, presupuestos, configuración y acceso. |
+| `includes/` | Conexión, seguridad, PDF e integraciones de correo. |
+| `plantillas/` | Plantilla de documentos. |
+| `assets/` | Estilos, JavaScript e imágenes. |
+| `sql/` | Esquemas y actualizaciones de base de datos. |
+| `docs/` | Manual, seguridad y documentación de distribución. |
 
-## Manual rapido
+El repositorio también incluye un [Dockerfile](Dockerfile) basado en PHP 8.2 y Apache. La ruta de uso principal documentada aquí es la aplicación de escritorio.
 
-Consulta:
+## Seguridad y comprobaciones
 
-[docs/manual.md](docs/manual.md)
+La [lista de seguridad](docs/security-checklist.md) documenta controles de acceso por sesión, contraseñas con hash, protección CSRF, consultas preparadas y validación de imágenes.
 
-Tambien puedes abrir el manual desde:
+Antes de distribuir una compilación, revisa esa lista y la [auditoría de prepublicación](docs/pre-publication-audit.md). Esta última registra verificaciones anteriores; no sustituye la comprobación de la compilación que vayas a entregar.
 
-```text
-Configuracion -> Manual y licencia -> Ver manual
-```
+## Licencia y autoría
 
-## Licencia
+Your Small Desk se distribuye bajo **Your Small Desk Community License**, una licencia *source-available* de uso gratuito limitado.
 
-Your Small Desk se distribuye bajo una licencia comunitaria de uso gratuito limitado.
+Permite determinados usos para autónomos, pequeños negocios, microempresas, uso personal, educativo e interno no masivo. Requieren autorización escrita, entre otros:
 
-Uso gratuito permitido para autonomos, pequenos negocios, microempresas, uso personal y educativo.
+- El uso en empresas medianas o grandes, o con facturación anual superior a **100.000 EUR**.
+- La reventa o redistribución como producto propio.
+- La oferta como SaaS o servicio alojado a terceros.
+- La integración en productos comerciales de terceros.
 
-Empresas medianas o grandes, facturacion anual superior a 100.000 EUR, reventa, redistribucion como producto propio, SaaS o integraciones comerciales de terceros requieren autorizacion escrita del autor.
+Consulta las condiciones completas en [LICENSE](LICENSE). El acceso al código no implica permiso de uso o redistribución sin restricciones.
 
-Consulta el archivo [LICENSE](LICENSE).
+Las dependencias tienen sus propias condiciones: consulta [Licencias de terceros](docs/third-party-licenses.md). Si el paquete incluye PHP portable, debe conservar su licencia y atribución, normalmente en `resources/php/license.txt`.
 
-Esta licencia no sustituye asesoramiento legal profesional. Si necesitas un uso empresarial ampliado o redistribucion, contacta con el autor.
+La auditoría del proyecto señala una revisión pendiente de compatibilidad entre la licencia propia y la distribución de mPDF bajo GPL-2.0-only. Debe resolverse antes de distribuir instaladores públicos.
 
-## Licencias de terceros
-
-Consulta [docs/third-party-licenses.md](docs/third-party-licenses.md).
-
-Si descargas el instalador de Windows, puede incluir PHP portable. Su licencia y atribucion se conservan dentro del paquete, normalmente en `resources/php/license.txt`.
-
-## Autor
-
-Desarrollado por Diego Herrera Ayuso.
-
-No elimines ni ocultes el aviso de autoria:
+Desarrollado por **Diego Herrera Ayuso**. Conserva el aviso de autoría:
 
 ```text
 Your Small Desk · Desarrollado por Diego Herrera Ayuso
